@@ -1,0 +1,4 @@
+# requirements.txt
+
+pyaml==23.9.7
+PyYAML==6.0.1
