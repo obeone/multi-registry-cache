@@ -1,0 +1,181 @@
+# This is the config file for the setup. You can use this file as a template for your own config.
+# Every generated files will be written to the compose folder. The compose folder will be created by the setup.
+
+# Your registries. You can add as many registries as you want. The name is the name of the registry and will be used
+# in the compose file. The url is the url of the registry. The username and password are the credentials for the registry.
+# You can add elements to the list. The setup will generate the compose file for every registry, and these elements will
+# be available for generation of parts configs (like traefik, see below)
+registries:
+- name: dockerhub
+  url: https://registry-1.docker.io
+  username: user
+  password: pass
+- name: ghcr
+  url: https://ghcr.io
+  username: user
+  password: pass
+- name: nvcr
+  url: https://nvcr.io
+  username: user
+  password: pass
+- name: quay
+  url: https://quay.io
+  username: user
+  password: pass
+
+
+# The docker compose config. This config is used to generate the docker-compose.yaml file. You can use the baseConfig
+# to set the base config for the compose file. The perRegistry config will be used for every registry. You can use the
+# any placeholder from registry (defined in previous section) in the perRegistry config. The setup will replace the
+# placeholder with the value from the registry config. For example, the placeholder {name} will be replaced with the
+# name of the registry.
+docker:
+  baseConfig:
+    version: '3.1'
+    services:
+      traefik:
+        image: traefik:v2.10
+        command:
+          - '--providers.file.filename=/etc/traefik/traefik.yaml'
+        ports:
+          - '80:80'
+          - '443:443'
+        volumes:
+          - './traefik.yaml:/etc/traefik/traefik.yaml:ro'
+          - './acme:/etc/traefik/acme:rw'
+        networks:
+          - 'registries'
+        # Here is a sample of how to use environment variables in the docker compose config
+        # used to configure (one of) ACME DNS challenge
+        environment:
+          - 'RFC2136_NAMESERVER=$RFC2136_NAMESERVER'
+          - 'RFC2136_TSIG_ALGORITHM=$RFC2136_TSIG_ALGORITHM'
+          - 'RFC2136_TSIG_KEY=$RFC2136_TSIG_KEY'
+          - 'RFC2136_TSIG_SECRET=$RFC2136_TSIG_SECRET'
+
+      redis:
+        image: redis:7.2
+        networks:
+          - 'registries'
+        volumes:
+          - './redis.conf:/usr/local/etc/redis/redis.conf:ro'
+        command: 
+          - redis-server
+          - /usr/local/etc/redis/redis.conf
+
+    networks:
+      registries: {}
+
+
+  perRegistry:
+    compose:
+      image: registry:2
+      volumes: 
+        - './{name}.yaml:/etc/docker/registry/config.yml:ro'
+      networks:
+        - registries
+      environment:
+        - 'REGISTRY_HTTP_SECRET=$REGISTRY_HTTP_SECRET'
+
+
+# The traefik config. This config is used to generate the traefik.yaml file. As with the docker compose config, you can
+# use the baseConfig to set the base config for the traefik config. The perRegistry config will be used for every registry.
+# You can use the any placeholder from registry (defined in previous section) in the perRegistry config. The setup will
+# replace the placeholder with the value from the registry config. For example, the placeholder {name} will be replaced
+# with the name of the registry.
+# In this sample config, I use a wildcard CNAME (and certificate) to use a subdomain for every registry.
+traefik:
+  baseConfig:
+    providers:
+      file:
+        filename: /etc/traefik/traefik.yaml
+    entryPoints:
+      web:
+        address: ":80"
+        http:
+          redirections:
+            entryPoint:
+              to: websecure
+              scheme: https
+              permanent: true
+      websecure:
+        address: ":443"
+    http:
+      routers: {}
+      services: {}
+    certificatesResolvers:
+      mydnschallenge:
+        acme:
+          email: me@example.net
+          storage: /etc/traefik/acme/acme.json
+          dnsChallenge:
+            provider: rfc2136
+            delayBeforeCheck: 30
+            resolvers:
+              - "1.1.1.1:53"
+    log:
+      level: DEBUG
+    accessLog: {}
+    tls:
+      stores:
+        default:
+          defaultGeneratedCert:
+            resolver: mydnschallenge
+            domain:
+              main: registry-cache.example.net
+              sans:
+                - '*.registry-cache.example.net'
+  perRegistry:
+    router: 
+      rule: "Host(`{name}.registry-cache.example.net`)"
+      entryPoints:
+        - websecure
+      
+      # You must use the placeholder {name} in the service. The setup will replace the placeholder with the name of the registry.
+      service: '{name}'
+      tls: {}
+      
+    service:
+      loadBalancer:
+        # You must the declared service name in the compose config.
+        servers:
+          - url: "http://{name}:5000"
+
+# The registry config is the same as the official registry config (https://docs.docker.com/registry/configuration/)
+# in one file. As it a different file for every registry, you can use placeholders from the registry config in the
+# whole config. The setup will replace the placeholder with the value from the registry config. For example, the
+# placeholder {name} will be replaced with the name of the registry.
+  baseConfig:
+    version: '0.1'
+    health:
+      storagedriver:
+        enabled: true
+        interval: 10s
+        threshold: 3
+    http:
+      addr: :5000
+      headers:
+        X-Content-Type-Options:
+        - nosniff
+    log:
+      fields:
+        service: registry
+        
+    # You can use any storage driver you want supported by registry (https://distribution.github.io/distribution/storage-drivers/)
+    storage:
+      cache:
+        blobdescriptor: redis
+      s3:
+        accesskey: registry_accesskey
+        bucket: registry
+        region: none
+        regionendpoint: https://my.s3.storage
+        rootdirectory: "{name}"
+        secretkey: registry_secretkey
+
+    redis:
+      addr: redis:6379
+      # Don’t set a db number. If redis key exists, db will be set to the right number.
+
+    # Proxy will be configured by the setup. You basically don't need to touch this.
+    proxy: {}
