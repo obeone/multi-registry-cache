@@ -99,6 +99,8 @@ def create_registry_config(config, registry, db):
     if registry['username'] and registry['password']:
         config['proxy']['username'] = registry['username']
         config['proxy']['password'] = registry['password']
+    if registry['ttl']:
+        config['proxy']['ttl'] = registry['ttl']
 
     interpolated = interpolate_strings(config, registry)
     
