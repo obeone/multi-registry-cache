@@ -35,33 +35,35 @@ docker:
     services:
       traefik:
         image: traefik:v2.10
+        restart: always
         command:
-          - '--providers.file.filename=/etc/traefik/traefik.yaml'
+        - '--providers.file.filename=/etc/traefik/traefik.yaml'
         ports:
-          - '80:80'
-          - '443:443'
+        - '80:80'
+        - '443:443'
         volumes:
-          - './traefik.yaml:/etc/traefik/traefik.yaml:ro'
-          - './acme:/etc/traefik/acme:rw'
+        - './traefik.yaml:/etc/traefik/traefik.yaml:ro'
+        - './acme:/etc/traefik/acme:rw'
         networks:
-          - 'registries'
+        - 'registries'
         # Here is a sample of how to use environment variables in the docker compose config
         # used to configure (one of) ACME DNS challenge
         environment:
-          - 'RFC2136_NAMESERVER=$RFC2136_NAMESERVER'
-          - 'RFC2136_TSIG_ALGORITHM=$RFC2136_TSIG_ALGORITHM'
-          - 'RFC2136_TSIG_KEY=$RFC2136_TSIG_KEY'
-          - 'RFC2136_TSIG_SECRET=$RFC2136_TSIG_SECRET'
+        - 'RFC2136_NAMESERVER=$RFC2136_NAMESERVER'
+        - 'RFC2136_TSIG_ALGORITHM=$RFC2136_TSIG_ALGORITHM'
+        - 'RFC2136_TSIG_KEY=$RFC2136_TSIG_KEY'
+        - 'RFC2136_TSIG_SECRET=$RFC2136_TSIG_SECRET'
 
       redis:
         image: redis:7.2
+        restart: always
         networks:
-          - 'registries'
+        - 'registries'
         volumes:
-          - './redis.conf:/usr/local/etc/redis/redis.conf:ro'
-        command: 
-          - redis-server
-          - /usr/local/etc/redis/redis.conf
+        - './redis.conf:/usr/local/etc/redis/redis.conf:ro'
+        command:
+        - redis-server
+        - /usr/local/etc/redis/redis.conf
 
     networks:
       registries: {}
@@ -70,12 +72,13 @@ docker:
   perRegistry:
     compose:
       image: registry:2
-      volumes: 
-        - './{name}.yaml:/etc/docker/registry/config.yml:ro'
+      restart: always
+      volumes:
+      - './{name}.yaml:/etc/docker/registry/config.yml:ro'
       networks:
-        - registries
+      - registries
       environment:
-        - 'REGISTRY_HTTP_SECRET=$REGISTRY_HTTP_SECRET'
+      - 'REGISTRY_HTTP_SECRET=$REGISTRY_HTTP_SECRET'
 
 
 # The traefik config. This config is used to generate the traefik.yaml file. As with the docker compose config, you can
@@ -112,7 +115,7 @@ traefik:
             provider: rfc2136
             delayBeforeCheck: 30
             resolvers:
-              - "1.1.1.1:53"
+            - "1.1.1.1:53"
     log:
       level: DEBUG
     accessLog: {}
@@ -124,27 +127,27 @@ traefik:
             domain:
               main: registry-cache.example.net
               sans:
-                - '*.registry-cache.example.net'
+              - '*.registry-cache.example.net'
   perRegistry:
-    router: 
+    router:
       rule: "Host(`{name}.registry-cache.example.net`)"
       entryPoints:
-        - websecure
-      
+      - websecure
+
       # You must use the placeholder {name} in the service. The setup will replace the placeholder with the name of the registry.
       service: '{name}'
       tls: {}
-      
+
     service:
       loadBalancer:
         # You must the declared service name in the compose config.
         servers:
-          - url: "http://{name}:5000"
+        - url: "http://{name}:5000"
 
-# The registry config is the same as the official registry config (https://docs.docker.com/registry/configuration/)
-# in one file. As it a different file for every registry, you can use placeholders from the registry config in the
-# whole config. The setup will replace the placeholder with the value from the registry config. For example, the
-# placeholder {name} will be replaced with the name of the registry.
+  # The registry config is the same as the official registry config (https://docs.docker.com/registry/configuration/)
+  # in one file. As it a different file for every registry, you can use placeholders from the registry config in the
+  # whole config. The setup will replace the placeholder with the value from the registry config. For example, the
+  # placeholder {name} will be replaced with the name of the registry.
   baseConfig:
     version: '0.1'
     health:
@@ -160,7 +163,7 @@ traefik:
     log:
       fields:
         service: registry
-        
+
     # You can use any storage driver you want supported by registry (https://distribution.github.io/distribution/storage-drivers/)
     storage:
       cache:
