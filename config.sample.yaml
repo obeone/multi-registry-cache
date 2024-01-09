@@ -22,6 +22,7 @@ registries:
   url: https://quay.io
   username: user
   password: pass
+  ttl: 720h
 
 
 # The docker compose config. This config is used to generate the docker-compose.yaml file. You can use the baseConfig
@@ -144,6 +145,7 @@ traefik:
         servers:
         - url: "http://{name}:5000"
 
+registry:
   # The registry config is the same as the official registry config (https://docs.docker.com/registry/configuration/)
   # in one file. As it a different file for every registry, you can use placeholders from the registry config in the
   # whole config. The setup will replace the placeholder with the value from the registry config. For example, the

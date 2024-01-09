@@ -96,15 +96,15 @@ def create_registry_config(config, registry, db):
         dict: The updated configuration.
     """
     config['proxy']['remoteurl'] = registry['url']
-    if registry['username'] and registry['password']:
+    if 'username' in registry and 'password' in registry:
         config['proxy']['username'] = registry['username']
         config['proxy']['password'] = registry['password']
-    if registry['ttl']:
+    if 'ttl' in registry:
         config['proxy']['ttl'] = registry['ttl']
 
     interpolated = interpolate_strings(config, registry)
     
-    if interpolated['redis']:
+    if 'redis' in interpolated:
         interpolated['redis']['db'] = int(db)
         
     return interpolated
