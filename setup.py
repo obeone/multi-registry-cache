@@ -74,7 +74,7 @@ if Confirm.ask(Text("Is everything correct? Do we create config.yaml?", style="b
     with open('config.yaml', 'w') as file:
         yaml.dump(config, file)
 
-    console.print(Text("\nconfig.yaml has been created successfully!", style="bold green"))
+    console.print(Text("\nconfig.yaml has been created successfully!", style="green"))
 else:
     with tempfile.NamedTemporaryFile('w', delete=False) as tf:
         yaml.dump(config, tf)
@@ -83,4 +83,4 @@ else:
     console.print(Text(f"\nconfig.yaml has not been created! The created file is in {temp_file_name}", style="bold red"))
 
 
-console.print(Text("Now you can edit config.yaml and fine-tune parameters and when it's ok for you, just run [blue]'python3 generate.py'", style="green"))
+console.print("[bold green]Now you can edit config.yaml and fine-tune parameters and when it's ok for you, just run [bold blue]'python3 generate.py'")
