@@ -88,6 +88,25 @@ After updating the configuration, restart `containerd`:
 sudo systemctl restart containerd
 ```
 
+#### nerdctl Configuration
+
+For `nerdctl`, you'll need to create a directory per registry mirror, and push content un a file :
+
+```bash
+mkdir -p /etc/containerd/certs.d/docker.io/
+```
+
+And create a file `/etc/containerd/certs.d/docker.io/hosts.toml` with the following content:
+
+```toml
+server = "https://docker.io"
+
+[host."https://dockerhub.registry-cache.example.net"]
+  capabilities = ["pull", "resolve"]
+```
+
+(Same principle in rootless mode, just modify user config)
+
 ### dockerd Configuration
 
 For `dockerd`, you can only configure a single mirror for Docker Hub. Update the `/etc/docker/daemon.json` file with the following:
