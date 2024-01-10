@@ -67,10 +67,7 @@ elif storage_driver == "gcs":
 elif storage_driver == "inmemory":
     storage_config = {}
 
-config['registry']['baseConfig']['storage'] = {
-    'driver': storage_driver,
-    **storage_config
-}
+config['registry']['baseConfig']['storage'][storage_driver] = storage_config
 
 # Dump the YAML with comments
 if Confirm.ask(Text("Is everything correct? Do we create config.yaml?", style="bold blue"), default=True):
