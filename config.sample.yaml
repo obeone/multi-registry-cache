@@ -171,8 +171,8 @@ registry:
 
     # You can use any storage driver you want supported by registry (https://distribution.github.io/distribution/storage-drivers/)
     storage:
-    # cache:
-    #   blobdescriptor: redis
+      cache:
+        blobdescriptor: redis
     # inmemory:
     # filesystem:
     #   rootdirectory: /var/lib/registry/{name}
