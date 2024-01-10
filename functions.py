@@ -4,6 +4,12 @@ configuration files for Docker Compose, Registry and Traefik.
 """
 
 import yaml
+import secrets
+import os
+from rich.console import Console
+from rich.text import Text
+
+console = Console()
 
 def interpolate_strings(obj, variables):
     """
@@ -44,6 +50,7 @@ def create_docker_service(registry, custom={}):
     }
     obj.update(custom)
     
+    console.print(Text("Docker service created for the registry", style="green"))
     return interpolate_strings(obj, registry)
 
 
@@ -63,6 +70,7 @@ def create_traefik_router(registry, custom={}):
     
     obj.update(custom)
     
+    console.print(Text("Traefik router object created", style="green"))
     return interpolate_strings(obj, registry)
 
 def create_traefik_service(registry, custom={}):
@@ -80,6 +88,7 @@ def create_traefik_service(registry, custom={}):
     }
     obj.update(custom)
     
+    console.print(Text("Traefik service object created", style="green"))
     return interpolate_strings(obj, registry)
 
 
@@ -107,6 +116,7 @@ def create_registry_config(config, registry, db):
     if 'redis' in interpolated:
         interpolated['redis']['db'] = int(db)
         
+    console.print(Text("Registry configuration created", style="green"))
     return interpolated
 
 
@@ -120,6 +130,7 @@ def write_yaml_file(filename, data):
     """
     with open(filename, 'w', encoding='UTF-8') as file:
         yaml.dump(data, file)
+    console.print(Text(f"Data written to {filename}", style="green"))
 
 
 
@@ -133,3 +144,17 @@ def write_to_file(filename, data):
     """
     with open(filename, 'w', encoding='UTF-8') as file:
         file.write(data)
+    console.print(Text(f"Data written to {filename}", style="green"))
+
+
+def write_http_secret():
+    """
+    Write the HTTP secret to the .env file if it does not exist or if REGISTRY_HTTP_SECRET is not already set.
+    """
+    if not os.path.exists('compose/.env') or 'REGISTRY_HTTP_SECRET' not in open('compose/.env').read():
+        with open('compose/.env', 'a') as env_file:
+            env_file.write(f"REGISTRY_HTTP_SECRET={secrets.token_hex(32)}\n")
+        console.print(Text("HTTP secret written to .env file", style="green"))
+    else:
+        console.print(Text("compose/.env already exists or REGISTRY_HTTP_SECRET is already set", style="yellow"))
+

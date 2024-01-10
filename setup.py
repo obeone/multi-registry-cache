@@ -1,11 +1,9 @@
-from rich.console import Console
 from rich.prompt import Prompt, Confirm
 from rich.text import Text
 from ruamel.yaml import YAML
+from functions import console
 
 import tempfile
-
-console = Console()
 
 yaml = YAML()
 yaml.preserve_quotes = True
@@ -73,7 +71,6 @@ config['registry']['baseConfig']['storage'] = {
     'driver': storage_driver,
     **storage_config
 }
-
 
 # Dump the YAML with comments
 if Confirm.ask(Text("Is everything correct? Do we create config.yaml?", style="bold blue"), default=True):
