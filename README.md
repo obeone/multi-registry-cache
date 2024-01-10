@@ -56,7 +56,13 @@ By using a pull-through cache, you can:
    nano config.yaml # or use your preferred text editor
    ```
 
-6. **Start Your Services**
+6. **Generate Configuration Files**
+   Run the generate script to create the necessary configuration files for your setup.
+   ```bash
+   python generate.py
+   ```
+
+7. **Start Your Services**
    Use Docker Compose to start your registry mirrors and the Traefik reverse proxy.
    ```bash
    cd compose
