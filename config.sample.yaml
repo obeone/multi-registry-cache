@@ -49,7 +49,7 @@ docker:
         - 'registries'
         # Here is a sample of how to use environment variables in the docker compose config
         # used to configure (one of) ACME DNS challenge
-        environment:
+        # environment:
         # - 'RFC2136_NAMESERVER=$RFC2136_NAMESERVER'
         # - 'RFC2136_TSIG_ALGORITHM=$RFC2136_TSIG_ALGORITHM'
         # - 'RFC2136_TSIG_KEY=$RFC2136_TSIG_KEY'
