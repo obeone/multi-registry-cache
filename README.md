@@ -31,20 +31,38 @@ By using a pull-through cache, you can:
    cd multi-registry-cache
    ```
 
-2. **Configure Your Registries**
-   Copy the `config.sample.yaml` to `config.yaml` and edit the file to add your registry details, including names, URLs, and credentials.
+2. **Set Up a Virtual Environment (Optional)**
+   You may choose to create a virtual environment to avoid affecting your global Python package setup.
    ```bash
-   cp config.sample.yaml config.yaml
+   python3 -m venv .venv
+   source .venv/bin/activate
    ```
 
-3. **Generate Configuration Files**
-Install required packages and run the `generate.py` script to create Docker Compose and Traefik configuration files. Your docker compose files will be generated in the `compose` directory.
+3. **Install Dependencies**
+   Install the required packages using pip.
    ```bash
    pip install -r requirements.txt
-   python3 generate.py
    ```
 
-4. **Start Your Services**
+4. **Run the User-Friendly Setup**
+   Execute the setup script to configure your registries and generate necessary files.
+   ```bash
+   python setup.py
+   ```
+
+5. **Review Advanced Configuration**
+   After running the setup script, you should manually review the `config.yaml` file for advanced configurations such as TLS settings, Let's Encrypt, and more.
+   ```bash
+   nano config.yaml # or use your preferred text editor
+   ```
+
+6. **Generate Configuration Files**
+   Run the generate script to create the necessary configuration files for your setup.
+   ```bash
+   python generate.py
+   ```
+
+7. **Start Your Services**
    Use Docker Compose to start your registry mirrors and the Traefik reverse proxy.
    ```bash
    cd compose
@@ -69,6 +87,25 @@ After updating the configuration, restart `containerd`:
 ```bash
 sudo systemctl restart containerd
 ```
+
+#### nerdctl Configuration
+
+For `nerdctl`, you'll need to create a directory per registry mirror, and push content un a file :
+
+```bash
+mkdir -p /etc/containerd/certs.d/docker.io/
+```
+
+And create a file `/etc/containerd/certs.d/docker.io/hosts.toml` with the following content:
+
+```toml
+server = "https://docker.io"
+
+[host."https://dockerhub.registry-cache.example.net"]
+  capabilities = ["pull", "resolve"]
+```
+
+(Same principle in rootless mode, just modify user config)
 
 ### dockerd Configuration
 

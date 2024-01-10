@@ -49,11 +49,11 @@ docker:
         - 'registries'
         # Here is a sample of how to use environment variables in the docker compose config
         # used to configure (one of) ACME DNS challenge
-        environment:
-        - 'RFC2136_NAMESERVER=$RFC2136_NAMESERVER'
-        - 'RFC2136_TSIG_ALGORITHM=$RFC2136_TSIG_ALGORITHM'
-        - 'RFC2136_TSIG_KEY=$RFC2136_TSIG_KEY'
-        - 'RFC2136_TSIG_SECRET=$RFC2136_TSIG_SECRET'
+        # environment:
+        # - 'RFC2136_NAMESERVER=$RFC2136_NAMESERVER'
+        # - 'RFC2136_TSIG_ALGORITHM=$RFC2136_TSIG_ALGORITHM'
+        # - 'RFC2136_TSIG_KEY=$RFC2136_TSIG_KEY'
+        # - 'RFC2136_TSIG_SECRET=$RFC2136_TSIG_SECRET'
 
       redis:
         image: redis:7.2
@@ -96,43 +96,46 @@ traefik:
     entryPoints:
       web:
         address: ":80"
-        http:
-          redirections:
-            entryPoint:
-              to: websecure
-              scheme: https
-              permanent: true
+        # Automatically redirect http to https
+        # http:
+        #   redirections:
+        #     entryPoint:
+        #       to: websecure
+        #       scheme: https
+        #       permanent: true
       websecure:
         address: ":443"
     http:
       routers: {}
       services: {}
-    certificatesResolvers:
-      mydnschallenge:
-        acme:
-          email: me@example.net
-          storage: /etc/traefik/acme/acme.json
-          dnsChallenge:
-            provider: rfc2136
-            delayBeforeCheck: 30
-            resolvers:
-            - "1.1.1.1:53"
+    # certificatesResolvers:
+    #   mydnschallenge:
+    #     acme:
+    #       email: me@example.net
+    #       storage: /etc/traefik/acme/acme.json
+    #       dnsChallenge:
+    #         provider: rfc2136
+    #         delayBeforeCheck: 30
+    #         resolvers:
+    #         - "1.1.1.1:53"
     log:
       level: DEBUG
     accessLog: {}
-    tls:
-      stores:
-        default:
-          defaultGeneratedCert:
-            resolver: mydnschallenge
-            domain:
-              main: registry-cache.example.net
-              sans:
-              - '*.registry-cache.example.net'
+    # Easy configuration using a wildcard certificat
+    # tls:
+    #   stores:
+    #     default:
+    #       defaultGeneratedCert:
+    #         resolver: mydnschallenge
+    #         domain:
+    #           main: registry-cache.example.net
+    #           sans:
+    #           - '*.registry-cache.example.net'
   perRegistry:
     router:
       rule: "Host(`{name}.registry-cache.example.net`)"
       entryPoints:
+      - web
       - websecure
 
       # You must use the placeholder {name} in the service. The setup will replace the placeholder with the name of the registry.
@@ -170,13 +173,16 @@ registry:
     storage:
       cache:
         blobdescriptor: redis
-      s3:
-        accesskey: registry_accesskey
-        bucket: registry
-        region: none
-        regionendpoint: https://my.s3.storage
-        rootdirectory: "{name}"
-        secretkey: registry_secretkey
+    # inmemory:
+    # filesystem:
+    #   rootdirectory: /var/lib/registry/{name}
+    # s3:
+    #   accesskey: registry_accesskey
+    #   bucket: registry
+    #   region: none
+    #   regionendpoint: https://my.s3.storage
+    #   rootdirectory: "{name}"
+    #   secretkey: registry_secretkey
 
     redis:
       addr: redis:6379
