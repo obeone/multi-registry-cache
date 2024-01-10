@@ -171,18 +171,18 @@ registry:
 
     # You can use any storage driver you want supported by registry (https://distribution.github.io/distribution/storage-drivers/)
     storage:
-      cache:
-        blobdescriptor: redis
-      # inmemory:
-      filesystem:
-        rootdirectory: /var/lib/registry/{name}
-        # s3:
-        #   accesskey: registry_accesskey
-        #   bucket: registry
-        #   region: none
-        #   regionendpoint: https://my.s3.storage
-        #   rootdirectory: "{name}"
-        #   secretkey: registry_secretkey
+    # cache:
+    #   blobdescriptor: redis
+    # inmemory:
+    # filesystem:
+    #   rootdirectory: /var/lib/registry/{name}
+    # s3:
+    #   accesskey: registry_accesskey
+    #   bucket: registry
+    #   region: none
+    #   regionendpoint: https://my.s3.storage
+    #   rootdirectory: "{name}"
+    #   secretkey: registry_secretkey
 
     redis:
       addr: redis:6379
