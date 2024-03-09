@@ -22,7 +22,7 @@ while True:
     name = Prompt.ask("[blue]Enter the name for the registry [/][italic green](e.g., docker)[/]")
     registry = {
         'name': name,
-        'url': Prompt.ask(f"[blue]Enter the URL for registry {name} [/][italic green](e.g., docker.io)[/]"),
+        'url': Prompt.ask(f"[blue]Enter the URL for registry {name} [/][italic green](e.g., https://docker.io)[/]"),
         'username': Prompt.ask(f"[blue]Enter the username for registry {name} [/][italic green](e.g., user)[/]"),
         'password': Prompt.ask(f"[blue]Enter the password for registry {name} [/][italic green](e.g., pass)[/]"),
         'ttl': Prompt.ask(f"[blue]Enter the TTL for registry {name} [/][italic green](e.g., '720h')[/]", default="720h")
