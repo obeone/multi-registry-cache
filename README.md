@@ -27,7 +27,7 @@ By using a pull-through cache, you can:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/your-username/multi-registry-cache.git
+   git clone https://github.com/obeone/multi-registry-cache.git
    cd multi-registry-cache
    ```
 
