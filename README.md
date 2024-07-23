@@ -4,11 +4,29 @@ Welcome to the Multi-Registry Pull Through Cache Setup Guide! This project is de
 
 This script will generate a `docker-compose.yml` file. It will include one registry service for each registry mirror you wish to set up. A Traefik Proxy will be placed as a frontend for routing and providing a TLS endpoint. Additionally, a Redis service will be provided to enhance performance.
 
+## Table of Contents 📚
+
+- [Multi-Registry Pull Through Cache Setup Guide 🚀](#multi-registry-pull-through-cache-setup-guide-)
+  - [Table of Contents 📚](#table-of-contents-)
+  - [Purpose of the Project 🎯](#purpose-of-the-project-)
+  - [How to Set Up the Project 🛠️](#how-to-set-up-the-project-️)
+    - [Prerequisites](#prerequisites)
+    - [Step-by-Step Setup](#step-by-step-setup)
+  - [Configuring Container Runtimes 🔄](#configuring-container-runtimes-)
+    - [containerd Configuration](#containerd-configuration)
+      - [nerdctl Configuration](#nerdctl-configuration)
+    - [dockerd Configuration](#dockerd-configuration)
+    - [Kubernetes Clusters (k3s, RKE, RKE2 etc)](#kubernetes-clusters-k3s-rke-rke2-etc)
+      - [k3s / RKE2](#k3s--rke2)
+      - [Other distributions](#other-distributions)
+  - [Conclusion 🎉](#conclusion-)
+
 ## Purpose of the Project 🎯
 
 The primary goal of this project is to establish a local caching service that acts as an intermediary between your Docker daemons and public container image registries. This setup is perfect for environments with multiple instances of Docker or Kubernetes clusters, where each node pulling images separately can lead to unnecessary bandwidth consumption and latency. 🐳🔁
 
 By using a pull-through cache, you can:
+
 - Minimize external bandwidth usage
 - Accelerate image pull times
 - Reduce the load on public registries
@@ -18,6 +36,7 @@ By using a pull-through cache, you can:
 ## How to Set Up the Project 🛠️
 
 ### Prerequisites
+
 - Docker installed on your host machine
 - `containerd` and/or `dockerd` running on your nodes
 - Access to the internet to pull initial images
@@ -26,6 +45,7 @@ By using a pull-through cache, you can:
 ### Step-by-Step Setup
 
 1. **Clone the Repository**
+
    ```bash
    git clone https://github.com/obeone/multi-registry-cache.git
    cd multi-registry-cache
@@ -33,6 +53,7 @@ By using a pull-through cache, you can:
 
 2. **Set Up a Virtual Environment (Optional)**
    You may choose to create a virtual environment to avoid affecting your global Python package setup.
+
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate
@@ -40,30 +61,35 @@ By using a pull-through cache, you can:
 
 3. **Install Dependencies**
    Install the required packages using pip.
+
    ```bash
    pip install -r requirements.txt
    ```
 
 4. **Run the User-Friendly Setup**
    Execute the setup script to configure your registries and generate necessary files.
+
    ```bash
    python setup.py
    ```
 
 5. **Review Advanced Configuration**
-   After running the setup script, you should manually review the `config.yaml` file for advanced configurations such as TLS settings, Let's Encrypt, and more.
+   After running the setup script, you should manually review the `config.yaml` file for advanced configurations such as TLS settings, Let's Encrypt, and more. More details about this file in [CONFIG.md](CONFIG.md)
+
    ```bash
    nano config.yaml # or use your preferred text editor
    ```
 
 6. **Generate Configuration Files**
    Run the generate script to create the necessary configuration files for your setup.
+
    ```bash
    python generate.py
    ```
 
 7. **Start Your Services**
    Use Docker Compose to start your registry mirrors and the Traefik reverse proxy.
+
    ```bash
    cd compose
    docker compose up -d
@@ -84,6 +110,7 @@ For `containerd`, you'll need to modify the `config.toml` file to specify the re
 ```
 
 After updating the configuration, restart `containerd`:
+
 ```bash
 sudo systemctl restart containerd
 ```
@@ -118,6 +145,7 @@ For `dockerd`, you can only configure a single mirror for Docker Hub. Update the
 ```
 
 Reload the Docker daemon to apply the changes:
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl restart docker
@@ -138,6 +166,7 @@ mirrors:
     endpoint:
       - https://ghcr.registry-cache.example.net
 ```
+
 #### Other distributions
 
 For Kubernetes clusters, you'll probably need to configure each node's container runtime to use the registry mirror. Refer to the specific documentation of your distribution for details on how to apply registry mirror configurations.
