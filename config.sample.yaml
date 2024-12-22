@@ -32,7 +32,6 @@ registries:
 # name of the registry.
 docker:
   baseConfig:
-    version: '3.1'
     services:
       traefik:
         image: traefik:v2.10
