@@ -11,7 +11,11 @@ This script will generate a `compose.yaml` file (same as `docker-compose.yml`). 
   - [Purpose of the Project 🎯](#purpose-of-the-project-)
   - [How to Set Up the Project 🛠️](#how-to-set-up-the-project-️)
     - [Prerequisites](#prerequisites)
-    - [Step-by-Step Setup](#step-by-step-setup)
+    - [Running with Docker](#running-with-docker)
+      - [Run the Setup Script](#run-the-setup-script)
+      - [Run the Generate Script](#run-the-generate-script)
+    - [Running python files](#running-python-files)
+      - [Step-by-Step Setup](#step-by-step-setup)
   - [Configuring Container Runtimes 🔄](#configuring-container-runtimes-)
     - [containerd Configuration](#containerd-configuration)
       - [nerdctl Configuration](#nerdctl-configuration)
@@ -42,7 +46,29 @@ By using a pull-through cache, you can:
 - Access to the internet to pull initial images
 - Basic knowledge of Docker, Kubernetes, and container registries
 
-### Step-by-Step Setup
+
+### Running with Docker
+
+#### Run the Setup Script
+
+To execute the `setup.py` script inside the Docker container:
+
+```bash
+touch config.yaml
+docker run --rm -ti -v "./config.yaml:/app/config.yaml" obeoneorg/multi-registry-cache setup 
+```
+
+#### Run the Generate Script
+
+To trigger the `generate.py` script:
+
+```bash
+docker run --rm -ti -v "./config.yaml:/app/config.yaml" -v "./compose:/app/compose" obeoneorg/multi-registry-cache generate
+```
+
+### Running python files
+
+#### Step-by-Step Setup
 
 1. **Clone the Repository**
 
@@ -117,7 +143,7 @@ sudo systemctl restart containerd
 
 #### nerdctl Configuration
 
-For `nerdctl`, you'll need to create a directory per registry mirror, and push content un a file :
+For `nerdctl`, you'll need to create a directory per registry mirror and push content into a file:
 
 ```bash
 mkdir -p /etc/containerd/certs.d/docker.io/
@@ -155,7 +181,7 @@ sudo systemctl restart docker
 
 #### k3s / RKE2
 
-Edit file `/etc/rancher/(k3s|rke2)/registries.yaml` and add :
+Edit file `/etc/rancher/(k3s|rke2)/registries.yaml` and add:
 
 ```yaml
 mirrors:
@@ -181,4 +207,4 @@ Feel free to contribute to this project by submitting issues or pull requests. F
 
 ---
 
-**Keywords**: Docker, container registry, pull through cache, Docker Hub mirror, containerd, dockerd, Kubernetes, k3s, RKE, RKE2, image caching, setup guide, local mirror, container image optimization.
+**Keywords**: Docker, container registry, pull-through cache, Docker Hub mirror, containerd, dockerd, Kubernetes, k3s, RKE, RKE2, image caching, setup guide, local mirror, container image optimization.
