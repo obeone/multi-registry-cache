@@ -72,9 +72,20 @@ for registry in registries:
     count_redis_db += 1
 
 try:
-    functions.write_yaml_file('compose/docker-compose.yml', docker_config)
+    functions.write_yaml_file('compose/compose.yaml', docker_config)
     functions.write_yaml_file('compose/traefik.yaml', traefik_config)
     functions.write_to_file('compose/redis.conf', f'databases {count_redis_db}')
+    # If docker-compose.yml exists, ask for confirmation before removing it
+    docker_compose_path = 'compose/docker-compose.yml'
+    if os.path.exists(docker_compose_path):
+        console.print(Text("docker-compose.yml file exists, and now we use `compose.yaml` filename. Do you want to remove the deprecated `docker-compose.yml` file? (Y/n): ", style="bold yellow"), end="")
+        user_input = input().strip().lower()
+        if user_input == "" or user_input == 'y':
+            os.remove(docker_compose_path)
+            console.print(Text("Existing docker-compose.yml file removed", style="bold blue"))
+        else:
+            console.print(Text("docker-compose.yml file not removed", style="bold yellow"))
+    
     
     functions.write_http_secret()
         

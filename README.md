@@ -2,7 +2,7 @@
 
 Welcome to the Multi-Registry Pull Through Cache Setup Guide! This project is designed to help you create an efficient, bandwidth-saving local mirror for Docker Hub images and other container registries. By setting up a pull-through cache, you can significantly reduce internet traffic and improve the speed of image pulls for your containerized environments. 🌐💨
 
-This script will generate a `docker-compose.yml` file. It will include one registry service for each registry mirror you wish to set up. A Traefik Proxy will be placed as a frontend for routing and providing a TLS endpoint. Additionally, a Redis service will be provided to enhance performance.
+This script will generate a `compose.yaml` file (same as `docker-compose.yml`). It will include one registry service for each registry mirror you wish to set up. A Traefik Proxy will be placed as a frontend for routing and providing a TLS endpoint. Additionally, a Redis service will be provided to enhance performance.
 
 ## Table of Contents 📚
 
