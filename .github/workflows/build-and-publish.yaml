@@ -1,0 +1,68 @@
+name: Build and Push Docker image
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # For cosign
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3 
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        id: docker_build
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/obeone/multi-registry-cache:latest
+            docker.io/obeoneorg/multi-registry-cache:latest
+          platforms: linux/amd64,linux/arm64,linux/arm/v8,linux/arm/v6,linux/arm/v7,linux/i386
+
+      - name: Set up cosign
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign the container image with cosign
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          cosign sign --yes ghcr.io/obeone/multi-registry-cache@${DIGEST}
+          cosign sign --yes docker.io/obeoneorg/multi-registry-cache@${DIGEST}
+        env:
+          COSIGN_EXPERIMENTAL: true
+          DIGEST: ${{ steps.docker_build.outputs.digest }}
