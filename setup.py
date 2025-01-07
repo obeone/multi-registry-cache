@@ -2,6 +2,7 @@ from rich.prompt import Prompt, Confirm
 from rich.text import Text
 from ruamel.yaml import YAML
 from functions import console
+import os
 
 import tempfile
 
@@ -82,5 +83,9 @@ else:
 
     console.print(Text(f"\nconfig.yaml has not been created! The created file is in {temp_file_name}", style="bold red"))
 
+if os.environ.get('IN_DOCKER', False):
+    command = 'docker run --rm -ti -v "./config.yaml:/app/config.yaml" -v "./compose:/app/compose" obeoneorg/multi-registry-cache generate'
+else:
+    command = 'python3 generate.py'
 
-console.print("[bold green]Now you can edit config.yaml and fine-tune parameters and when it's ok for you, just run [bold blue]'python3 generate.py'")
+console.print(f"[bold green]Now you can edit [bold blue]config.yaml[bold green] and fine-tune parameters and when it's ok for you, just run :\n[bold blue]{command}")

@@ -17,6 +17,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Start the final image using a slimmer version of Python
 FROM python:3.12-slim
 
+ENV IN_DOCKER=1
+
 # Set the working directory
 WORKDIR /app
 
