@@ -12,7 +12,7 @@ COPY requirements.txt .
 # Install wheel and create wheel files for the requirements
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install wheel && \
-    pip wheel -r requirements.txt --wheel-dir /root/.cache/wheel
+    pip wheel --exists-action i -r requirements.txt --wheel-dir /root/.cache/wheel
 
 # Start the final image using a slimmer version of Python
 FROM python:3.12-slim
