@@ -24,13 +24,12 @@ registries:
   password: pass
   ttl: 720h
 
-
-# The docker compose config. This config is used to generate the docker-compose.yaml file. You can use the baseConfig
-# to set the base config for the compose file. The perRegistry config will be used for every registry. You can use the
-# any placeholder from registry (defined in previous section) in the perRegistry config. The setup will replace the
-# placeholder with the value from the registry config. For example, the placeholder {name} will be replaced with the
-# name of the registry.
 docker:
+  # The docker compose config. This config is used to generate the docker-compose.yaml file. You can use the baseConfig
+  # to set the base config for the compose file. The perRegistry config will be used for every registry. You can use the
+  # any placeholder from registry (defined in previous section) in the perRegistry config. The setup will replace the
+  # placeholder with the value from the registry config. For example, the placeholder {name} will be replaced with the
+  # name of the registry.
   baseConfig:
     services:
       traefik:
@@ -80,14 +79,13 @@ docker:
       environment:
       - 'REGISTRY_HTTP_SECRET=$REGISTRY_HTTP_SECRET'
 
-
-# The traefik config. This config is used to generate the traefik.yaml file. As with the docker compose config, you can
-# use the baseConfig to set the base config for the traefik config. The perRegistry config will be used for every registry.
-# You can use the any placeholder from registry (defined in previous section) in the perRegistry config. The setup will
-# replace the placeholder with the value from the registry config. For example, the placeholder {name} will be replaced
-# with the name of the registry.
-# In this sample config, I use a wildcard CNAME (and certificate) to use a subdomain for every registry.
 traefik:
+  # The traefik config. This config is used to generate the traefik.yaml file. As with the docker compose config, you can
+  # use the baseConfig to set the base config for the traefik config. The perRegistry config will be used for every registry.
+  # You can use the any placeholder from registry (defined in previous section) in the perRegistry config. The setup will
+  # replace the placeholder with the value from the registry config. For example, the placeholder {name} will be replaced
+  # with the name of the registry.
+  # In this sample config, I use a wildcard CNAME (and certificate) to use a subdomain for every registry.
   baseConfig:
     providers:
       file:
