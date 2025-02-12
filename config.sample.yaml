@@ -6,23 +6,23 @@
 # You can add elements to the list. The setup will generate the compose file for every registry, and these elements will
 # be available for generation of parts configs (like traefik, see below)
 registries:
-- name: dockerhub
-  url: https://registry-1.docker.io
-  username: user
-  password: pass
-- name: ghcr
-  url: https://ghcr.io
-  username: user
-  password: pass
-- name: nvcr
-  url: https://nvcr.io
-  username: user
-  password: pass
-- name: quay
-  url: https://quay.io
-  username: user
-  password: pass
-  ttl: 720h
+  - name: dockerhub
+    url: https://registry-1.docker.io
+    username: user
+    password: pass
+  - name: ghcr
+    url: https://ghcr.io
+    username: user
+    password: pass
+  - name: nvcr
+    url: https://nvcr.io
+    username: user
+    password: pass
+  - name: quay
+    url: https://quay.io
+    username: user
+    password: pass
+    ttl: 720h
 
 docker:
   # The docker compose config. This config is used to generate the docker-compose.yaml file. You can use the baseConfig
@@ -36,15 +36,15 @@ docker:
         image: traefik:v2.10
         restart: always
         command:
-        - '--providers.file.filename=/etc/traefik/traefik.yaml'
+          - "--providers.file.filename=/etc/traefik/traefik.yaml"
         ports:
-        - '80:80'
-        - '443:443'
+          - "80:80"
+          - "443:443"
         volumes:
-        - './traefik.yaml:/etc/traefik/traefik.yaml:ro'
-        - './acme:/etc/traefik/acme:rw'
+          - "./traefik.yaml:/etc/traefik/traefik.yaml:ro"
+          - "./acme:/etc/traefik/acme:rw"
         networks:
-        - 'registries'
+          - "registries"
         # Here is a sample of how to use environment variables in the docker compose config
         # used to configure (one of) ACME DNS challenge
         # environment:
@@ -57,27 +57,26 @@ docker:
         image: redis:7.2
         restart: always
         networks:
-        - 'registries'
+          - "registries"
         volumes:
-        - './redis.conf:/usr/local/etc/redis/redis.conf:ro'
+          - "./redis.conf:/usr/local/etc/redis/redis.conf:ro"
         command:
-        - redis-server
-        - /usr/local/etc/redis/redis.conf
+          - redis-server
+          - /usr/local/etc/redis/redis.conf
 
     networks:
       registries: {}
-
 
   perRegistry:
     compose:
       image: registry:2
       restart: always
       volumes:
-      - './{name}.yaml:/etc/docker/registry/config.yml:ro'
+        - "./{name}.yaml:/etc/docker/registry/config.yml:ro"
       networks:
-      - registries
+        - registries
       environment:
-      - 'REGISTRY_HTTP_SECRET=$REGISTRY_HTTP_SECRET'
+        - "REGISTRY_HTTP_SECRET=$REGISTRY_HTTP_SECRET"
 
 traefik:
   # The traefik config. This config is used to generate the traefik.yaml file. As with the docker compose config, you can
@@ -132,18 +131,18 @@ traefik:
     router:
       rule: "Host(`{name}.registry-cache.example.net`)"
       entryPoints:
-      - web
-      - websecure
+        - web
+        - websecure
 
       # You must use the placeholder {name} in the service. The setup will replace the placeholder with the name of the registry.
-      service: '{name}'
+      service: "{name}"
       tls: {}
 
     service:
       loadBalancer:
         # You must the declared service name in the compose config.
         servers:
-        - url: "http://{name}:5000"
+          - url: "http://{name}:5000"
 
 registry:
   # The registry config is the same as the official registry config (https://docs.docker.com/registry/configuration/)
@@ -151,7 +150,7 @@ registry:
   # whole config. The setup will replace the placeholder with the value from the registry config. For example, the
   # placeholder {name} will be replaced with the name of the registry.
   baseConfig:
-    version: '0.1'
+    version: "0.1"
     health:
       storagedriver:
         enabled: true
@@ -161,7 +160,7 @@ registry:
       addr: :5000
       headers:
         X-Content-Type-Options:
-        - nosniff
+          - nosniff
     log:
       fields:
         service: registry
