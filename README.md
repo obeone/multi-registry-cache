@@ -1,12 +1,26 @@
 # Multi-Registry Pull Through Cache Setup Guide 🚀
 
-Welcome to the Multi-Registry Pull Through Cache Setup Guide! This project is designed to help you create an efficient, bandwidth-saving local mirror for Docker Hub images and other container registries. By setting up a pull-through cache, you can significantly reduce internet traffic and improve the speed of image pulls for your containerized environments. 🌐💨
+Welcome to the Multi-Registry Pull Through Cache Setup Guide! This project is designed to help you create an efficient, bandwidth-saving local mirror for Docker Hub images and other container registries, including private registries. By setting up a pull-through cache, you can significantly reduce internet traffic and improve the speed of image pulls for your containerized environments. 🌐💨
 
 This script will generate a `compose.yaml` file (same as `docker-compose.yml`). It will include one registry service for each registry mirror you wish to set up. A Traefik Proxy will be placed as a frontend for routing and providing a TLS endpoint. Additionally, a Redis service will be provided to enhance performance.
+
+## Features ✨
+
+- **Multi-Registry Support**: Set up mirrors for Docker Hub, GitHub Container Registry (GHCR), or any other container registries.
+- **Private Registry Integration**: Easily add a private registry to push and pull images from your private repositories.
+- **Bandwidth Optimization**: Save bandwidth by caching container images locally, reducing repeated downloads.
+- **Speed Improvements**: Expedite image pulls within your network, leading to faster deployments and scaling.
+- **Docker and Kubernetes Compatibility**: Seamlessly integrates with Docker and Kubernetes environments.
+- **Advanced Configuration**: Customize registry settings, including TTL and credentials, with a user-friendly setup.
+- **Simple Deployment**: Leverage Docker Compose for a straightforward setup and management of services.
+- **Traefik Proxy Integration**: Use Traefik for intelligent routing and secure TLS endpoints out of the box.
+- **Performance Enhancements**: Utilize Redis to improve caching operations and reduce latency.
+- **Environment-Friendly**: Lower external data transfer, contributing to a reduced carbon footprint.
 
 ## Table of Contents 📚
 
 - [Multi-Registry Pull Through Cache Setup Guide 🚀](#multi-registry-pull-through-cache-setup-guide-)
+  - [Features ✨](#features-)
   - [Table of Contents 📚](#table-of-contents-)
   - [Purpose of the Project 🎯](#purpose-of-the-project-)
   - [How to Set Up the Project 🛠️](#how-to-set-up-the-project-️)
@@ -45,7 +59,6 @@ By using a pull-through cache, you can:
 - `containerd` and/or `dockerd` running on your nodes
 - Access to the internet to pull initial images
 - Basic knowledge of Docker, Kubernetes, and container registries
-
 
 ### Running with Docker
 
@@ -100,7 +113,7 @@ docker run --rm -ti -v "./config.yaml:/app/config.yaml" -v "./compose:/app/compo
    ```
 
 5. **Review Advanced Configuration**
-   After running the setup script, you should manually review the `config.yaml` file for advanced configurations such as TLS settings, Let's Encrypt, and more. More details about this file in [CONFIG.md](CONFIG.md)
+   After running the setup script, you should manually review the `config.yaml` file for advanced configurations such as TLS settings, Let's Encrypt, addition of private registries, and more. More details about this file in [CONFIG.md](CONFIG.md)
 
    ```bash
    nano config.yaml # or use your preferred text editor
@@ -199,7 +212,7 @@ For Kubernetes clusters, you'll probably need to configure each node's container
 
 ## Conclusion 🎉
 
-Congratulations! You've now set up a multi-registry pull-through cache that will serve as a local mirror for your container images. Enjoy faster image pulls, reduced external bandwidth, and a more resilient container environment!
+Congratulations! You've now set up a multi-registry pull-through cache that will serve as a local mirror for your container images, including private registry configurations. Enjoy faster image pulls, reduced external bandwidth, and a more resilient container environment!
 
 ---
 
@@ -207,4 +220,4 @@ Feel free to contribute to this project by submitting issues or pull requests. F
 
 ---
 
-**Keywords**: Docker, container registry, pull-through cache, Docker Hub mirror, containerd, dockerd, Kubernetes, k3s, RKE, RKE2, image caching, setup guide, local mirror, container image optimization.
+**Keywords**: Docker, container registry, pull-through cache, Docker Hub mirror, private registry, containerd, dockerd, Kubernetes, k3s, RKE, RKE2, image caching, setup guide, local mirror, container image optimization.
