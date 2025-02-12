@@ -104,12 +104,17 @@ def create_registry_config(config, registry, db):
     Returns:
         dict: The updated configuration.
     """
-    config['proxy']['remoteurl'] = registry['url']
-    if 'username' in registry and 'password' in registry:
-        config['proxy']['username'] = registry['username']
-        config['proxy']['password'] = registry['password']
-    if 'ttl' in registry:
-        config['proxy']['ttl'] = registry['ttl']
+    
+    if registry['type'] == 'cache':
+        config['proxy']['remoteurl'] = registry['url']
+        if 'username' in registry and 'password' in registry:
+            config['proxy']['username'] = registry['username']
+            config['proxy']['password'] = registry['password']
+        if 'ttl' in registry:
+            config['proxy']['ttl'] = registry['ttl']
+    elif 'proxy' in config:
+        del config['proxy']
+        
 
     interpolated = interpolate_strings(config, registry)
     

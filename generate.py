@@ -8,24 +8,25 @@ import yaml
 import functions
 from functions import console
 from rich.text import Text
+import copy
 
 
 # Load config
 try:
     with open('config.yaml', 'r', encoding='UTF-8') as file:
-        config = yaml.safe_load(file)
+        base_config = yaml.safe_load(file)
         console.print(Text("Config loaded successfully", style="bold green"))
 except FileNotFoundError:
     console.print(Text("Error: config.yaml not found", style="bold red"))
     raise
 
 try:
-    registries = config['registries']
-    docker_config = config['docker']['baseConfig']
-    docker_perregistry = config['docker']['perRegistry']
-    traefik_config = config['traefik']['baseConfig']
-    traefik_perregistry = config['traefik']['perRegistry']
-    registry_config = config['registry']['baseConfig']
+    registries = base_config['registries']
+    docker_config = base_config['docker']['baseConfig']
+    docker_perregistry = base_config['docker']['perRegistry']
+    traefik_config = base_config['traefik']['baseConfig']
+    traefik_perregistry = base_config['traefik']['perRegistry']
+    registry_config = base_config['registry']['baseConfig']
 except KeyError as e:
     console.print(Text(f"Error: Missing key in config file - {e}", style="bold red"))
     raise
@@ -45,7 +46,13 @@ for registry in registries:
 
     # Creating registry configuration file
     try:
-        registry_config_file = functions.create_registry_config(registry_config, registry, count_redis_db)
+        # Retrocompatibility with old config files without type field
+        if 'type' not in registry:
+            registry['type'] = 'cache'
+            console.print(Text(f"No type specified for registry {name}, defaulting to cache", style="bold yellow"))
+
+        registry_config_copy = copy.deepcopy(registry_config)
+        registry_config_file = functions.create_registry_config(registry_config_copy, registry, count_redis_db)
         functions.write_yaml_file(f'compose/{name}.yaml', registry_config_file)
         console.print(Text(f"Registry configuration file created for {name}", style="bold green"))
     except Exception as e:
@@ -54,7 +61,8 @@ for registry in registries:
 
     # Unsset password before interpolate variables
     try:
-        registry.pop('password')
+        if 'password' in registry:
+            registry.pop('password')
     except KeyError:
         console.print(Text(f"Error: Missing 'password' key in registry configuration for {name}", style="bold red"))
         raise

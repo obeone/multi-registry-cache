@@ -5,24 +5,31 @@
 # in the compose file. The url is the url of the registry. The username and password are the credentials for the registry.
 # You can add elements to the list. The setup will generate the compose file for every registry, and these elements will
 # be available for generation of parts configs (like traefik, see below)
+# Type is `cache` for caching registries, `registry` for normal registries.
 registries:
   - name: dockerhub
+    type: cache
     url: https://registry-1.docker.io
     username: user
     password: pass
   - name: ghcr
+    type: cache
     url: https://ghcr.io
     username: user
     password: pass
   - name: nvcr
+    type: cache
     url: https://nvcr.io
     username: user
     password: pass
   - name: quay
+    type: cache
     url: https://quay.io
     username: user
     password: pass
     ttl: 720h
+  - name: private
+    type: registry
 
 docker:
   # The docker compose config. This config is used to generate the docker-compose.yaml file. You can use the baseConfig
@@ -185,4 +192,5 @@ registry:
       # Don’t set a db number. If redis key exists, db will be set to the right number.
 
     # Proxy will be configured by the setup. You basically don't need to touch this.
+    # Proxy will be removed in case of normal registry type. It is only used for cache registries.
     proxy: {}
