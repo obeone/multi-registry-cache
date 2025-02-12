@@ -1,3 +1,4 @@
+from email.policy import default
 from rich.prompt import Prompt, Confirm
 from rich.text import Text
 from ruamel.yaml import YAML
@@ -20,11 +21,11 @@ console.print()
 
 config['registries'] = []
 while True:
-    name = Prompt.ask("[blue]Enter the name for the registry [/][italic green](e.g., docker)[/]")
+    name = Prompt.ask("[blue]Enter the name for the registry [/][italic green](e.g., docker)[/]", default="docker")
     registry = {
         'name': name,
         'type': 'cache',
-        'url': Prompt.ask(f"[blue]Enter the URL for registry {name} [/][italic green](e.g., https://registry-1.docker.io)[/]"),
+        'url': Prompt.ask(f"[blue]Enter the URL for registry {name} [/][italic green](e.g., https://registry-1.docker.io)[/]", default=f"https://registry-1.docker.io"),
         'username': Prompt.ask(f"[blue]Enter the username for registry {name} [/][italic green](e.g., user)[/]"),
         'password': Prompt.ask(f"[blue]Enter the password for registry {name} [/][italic green](e.g., pass)[/]"),
         'ttl': Prompt.ask(f"[blue]Enter the TTL for registry {name} [/][italic green](e.g., '720h')[/]", default="720h")
@@ -37,12 +38,12 @@ while True:
         break
 
 if Confirm.ask(Text("Do you want to add a private registry?", style="bold blue"), default=False):
-    name = Prompt.ask("[blue]Enter the name for your private registry [/][italic green](e.g., private)[/]")
+    name = Prompt.ask("[blue]Enter the name for your private registry [/][italic green](e.g., private)[/]", default="private")
     private_registry = {
         'name': name,
         'type': 'registry',
     }
-    config['registries'].append(registry)
+    config['registries'].append(private_registry)
 
 domain_name = Prompt.ask("[blue]Enter the domain name to use [/][italic green](For example, {name}.registry.example.com can produce docker.registry.example.com)[/]")
 config['traefik']['perRegistry']['router']['rule'] = f"Host(`{domain_name}`)"
