@@ -70,7 +70,7 @@ jobs:
           COSIGN_EXPERIMENTAL: true
           DIGEST: ${{ steps.docker_build.outputs.digest }}
 
-      - name: Updage Docker Hub description
+      - name: Update Docker Hub description
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
