@@ -108,6 +108,17 @@ traefik:
         #       permanent: true
       websecure:
         address: ":443"
+        transport:
+          # Configure response timeouts for the transport layer.
+          # Setting these timeouts to 0 disables them, which is important for a container registry
+          # to allow long-lived connections during large image uploads or downloads without premature termination.
+          respondingTimeouts:
+            # Timeout for reading the response
+            readTimeout: 0s
+            # Timeout for writing the response
+            writeTimeout: 0s
+            # Timeout for idle connections
+            idleTimeout: 0s
     http:
       routers: {}
       services: {}
