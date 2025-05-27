@@ -1,7 +1,10 @@
 """
-This module sets up a multi-registry environment by creating configuration files 
-for Docker Compose, registry and Traefik.
+This module sets up a multi-registry environment by creating configuration files
+for Docker Compose, registry, and Traefik.
 See the README.md file for more information.
+
+Usage:
+    Run this script to generate configuration files based on the config.yaml.
 """
 import os
 import yaml
@@ -11,7 +14,7 @@ from rich.text import Text
 import copy
 
 
-# Load config
+# Load configuration from config.yaml file
 try:
     with open('config.yaml', 'r', encoding='UTF-8') as file:
         base_config = yaml.safe_load(file)
@@ -20,6 +23,7 @@ except FileNotFoundError:
     console.print(Text("Error: config.yaml not found", style="bold red"))
     raise
 
+# Extract configuration sections from the loaded config
 try:
     registries = base_config['registries']
     docker_config = base_config['docker']['baseConfig']
@@ -31,7 +35,7 @@ except KeyError as e:
     console.print(Text(f"Error: Missing key in config file - {e}", style="bold red"))
     raise
 
-# Create a compose directory to store the configuration files
+# Create a compose directory to store the configuration files if it does not exist
 if not os.path.exists('compose'):
     os.mkdir('compose')
     os.mkdir('compose/acme')
@@ -39,18 +43,21 @@ if not os.path.exists('compose'):
 else:
     console.print(Text("Compose directory already exists", style="bold yellow"))
 
-# Adding services to docker-compose and routers to traefik
+# Initialize Redis database count for registries
 count_redis_db = 0
+
+# Iterate over each registry to create configuration files and update docker and traefik configs
 for registry in registries:
     name = registry['name']
 
-    # Creating registry configuration file
+    # Create registry configuration file
     try:
-        # Retrocompatibility with old config files without type field
+        # Retrocompatibility with old config files without 'type' field
         if 'type' not in registry:
             registry['type'] = 'cache'
             console.print(Text(f"No type specified for registry {name}, defaulting to cache", style="bold yellow"))
 
+        # Deep copy base registry config and create specific config for this registry
         registry_config_copy = copy.deepcopy(registry_config)
         registry_config_file = functions.create_registry_config(registry_config_copy, registry, count_redis_db)
         functions.write_yaml_file(f'compose/{name}.yaml', registry_config_file)
@@ -59,7 +66,7 @@ for registry in registries:
         console.print(Text(f"Error creating registry configuration file for {name}: {e}", style="bold red"))
         raise
 
-    # Unsset password before interpolate variables
+    # Unset password before interpolating variables to avoid leaking sensitive data
     try:
         if 'password' in registry:
             registry.pop('password')
@@ -67,7 +74,7 @@ for registry in registries:
         console.print(Text(f"Error: Missing 'password' key in registry configuration for {name}", style="bold red"))
         raise
 
-    # Creating docker-compose and traefik configuration
+    # Create docker-compose and traefik configuration entries for this registry
     try:
         docker_config['services'][name] = functions.create_docker_service(registry, docker_perregistry['compose'])
         traefik_config['http']['routers'][name] = functions.create_traefik_router(registry, traefik_perregistry['router'])
@@ -77,12 +84,15 @@ for registry in registries:
         console.print(Text(f"Error creating docker-compose and traefik configuration for {name}: {e}", style="bold red"))
         raise
 
+    # Increment Redis database count for next registry
     count_redis_db += 1
 
+# Write final configuration files and handle deprecated docker-compose.yml file
 try:
     functions.write_yaml_file('compose/compose.yaml', docker_config)
     functions.write_yaml_file('compose/traefik.yaml', traefik_config)
     functions.write_to_file('compose/redis.conf', f'databases {count_redis_db}')
+
     # If docker-compose.yml exists, ask for confirmation before removing it
     docker_compose_path = 'compose/docker-compose.yml'
     if os.path.exists(docker_compose_path):
@@ -93,10 +103,10 @@ try:
             console.print(Text("Existing docker-compose.yml file removed", style="bold blue"))
         else:
             console.print(Text("docker-compose.yml file not removed", style="bold yellow"))
-    
-    
+
+    # Write HTTP secret file
     functions.write_http_secret()
-        
+
     console.print(Text("Configuration files written successfully", style="bold green"))
 except Exception as e:
     console.print(Text(f"Error writing configuration files: {e}", style="bold red"))

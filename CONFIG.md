@@ -187,16 +187,16 @@ registry:
 
 #### Automatic
 
-- Run `python setup.py` and fine-tune settings in `config.yaml`after that.
-- And run `python generate.py` to generate all files in `compose` directory.
+- Run `python setup.py` and fine-tune settings in `config.yaml` afterwards.
+- Then run `python generate.py` to generate all files in the `compose` directory.
 
 #### Manual
 
 1. Copy `config.sample.yaml` to `config.yaml`.
 2. Fill in your registry credentials and other settings.
-3. Set everything else (especially hosts)
-4. Execute `python generate.py` to generate all files in `compose` directory.
-5. Go in that directory (`cd compose`)
+3. Set everything else (especially hosts).
+4. Execute `python generate.py` to generate all files in the `compose` directory.
+5. Go into that directory (`cd compose`).
 6. Run `docker compose up -d` to start the services.
 
 By following these steps, you can configure and run your multi-registry environment with Traefik and Redis caching, simplifying the management of multiple container registries.
