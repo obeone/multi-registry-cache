@@ -1,11 +1,11 @@
-# This is the config file for the setup. You can use this file as a template for your own config.
-# Every generated files will be written to the compose folder. The compose folder will be created by the setup.
+# This is the config file for the setup. You can use this file as a template for your own configuration.
+# All generated files will be written to the 'compose' folder. The 'compose' folder will be created by the setup if it does not exist.
 
-# Your registries. You can add as many registries as you want. The name is the name of the registry and will be used
-# in the compose file. The url is the url of the registry. The username and password are the credentials for the registry.
-# You can add elements to the list. The setup will generate the compose file for every registry, and these elements will
-# be available for generation of parts configs (like traefik, see below)
-# Type is `cache` for caching registries, `registry` for normal registries.
+# Your registries. You can add as many registries as you want. The 'name' is the identifier of the registry and will be used
+# in the compose file. The 'url' is the URL of the registry. The 'username' and 'password' are the credentials for the registry.
+# You can add additional elements to the list. The setup will generate the compose file for every registry, and these elements will
+# be available for generating partial configs (like Traefik, see below).
+# The 'type' is `cache` for caching registries, and `registry` for normal registries.
 registries:
   - name: dockerhub
     type: cache
@@ -52,13 +52,13 @@ docker:
           - "./acme:/etc/traefik/acme:rw"
         networks:
           - "registries"
-        # Here is a sample of how to use environment variables in the docker compose config
-        # used to configure (one of) ACME DNS challenge
+        # Here is a sample of how to use environment variables in the Docker Compose config
+        # used to configure one of the ACME DNS challenges
         # environment:
-        # - 'RFC2136_NAMESERVER=$RFC2136_NAMESERVER'
-        # - 'RFC2136_TSIG_ALGORITHM=$RFC2136_TSIG_ALGORITHM'
-        # - 'RFC2136_TSIG_KEY=$RFC2136_TSIG_KEY'
-        # - 'RFC2136_TSIG_SECRET=$RFC2136_TSIG_SECRET'
+        #   - 'RFC2136_NAMESERVER=$RFC2136_NAMESERVER'
+        #   - 'RFC2136_TSIG_ALGORITHM=$RFC2136_TSIG_ALGORITHM'
+        #   - 'RFC2136_TSIG_KEY=$RFC2136_TSIG_KEY'
+        #   - 'RFC2136_TSIG_SECRET=$RFC2136_TSIG_SECRET'
 
       redis:
         image: redis:7.2
@@ -86,12 +86,12 @@ docker:
         - "REGISTRY_HTTP_SECRET=$REGISTRY_HTTP_SECRET"
 
 traefik:
-  # The traefik config. This config is used to generate the traefik.yaml file. As with the docker compose config, you can
-  # use the baseConfig to set the base config for the traefik config. The perRegistry config will be used for every registry.
-  # You can use the any placeholder from registry (defined in previous section) in the perRegistry config. The setup will
+  # The Traefik config. This config is used to generate the traefik.yaml file. As with the Docker Compose config, you can
+  # use the baseConfig to set the base config for Traefik. The perRegistry config will be used for every registry.
+  # You can use any placeholder from the registry (defined in the previous section) in the perRegistry config. The setup will
   # replace the placeholder with the value from the registry config. For example, the placeholder {name} will be replaced
   # with the name of the registry.
-  # In this sample config, I use a wildcard CNAME (and certificate) to use a subdomain for every registry.
+  # In this sample config, a wildcard CNAME (and certificate) is used to assign a subdomain for every registry.
   baseConfig:
     providers:
       file:
@@ -99,7 +99,7 @@ traefik:
     entryPoints:
       web:
         address: ":80"
-        # Automatically redirect http to https
+        # Automatically redirect HTTP to HTTPS
         # http:
         #   redirections:
         #     entryPoint:
@@ -135,7 +135,7 @@ traefik:
     log:
       level: DEBUG
     accessLog: {}
-    # Easy configuration using a wildcard certificat
+    # Easy configuration using a wildcard certificate
     # tls:
     #   stores:
     #     default:
@@ -158,13 +158,13 @@ traefik:
 
     service:
       loadBalancer:
-        # You must the declared service name in the compose config.
+        # You must use the declared service name in the compose config.
         servers:
           - url: "http://{name}:5000"
 
 registry:
   # The registry config is the same as the official registry config (https://docs.docker.com/registry/configuration/)
-  # in one file. As it a different file for every registry, you can use placeholders from the registry config in the
+  # in one file. As it is a different file for every registry, you can use placeholders from the registry config in the
   # whole config. The setup will replace the placeholder with the value from the registry config. For example, the
   # placeholder {name} will be replaced with the name of the registry.
   baseConfig:
@@ -183,7 +183,7 @@ registry:
       fields:
         service: registry
 
-    # You can use any storage driver you want supported by registry (https://distribution.github.io/distribution/storage-drivers/)
+    # You can use any storage driver supported by the registry (https://distribution.github.io/distribution/storage-drivers/)
     storage:
       cache:
         blobdescriptor: redis
@@ -200,7 +200,7 @@ registry:
 
     redis:
       addr: redis:6379
-      # Don’t set a db number. If redis key exists, db will be set to the right number.
+      # Do not set a DB number. If the Redis key exists, the DB will be set to the correct number.
 
     # Proxy will be configured by the setup. You basically don't need to touch this.
     # Proxy will be removed in case of normal registry type. It is only used for cache registries.
