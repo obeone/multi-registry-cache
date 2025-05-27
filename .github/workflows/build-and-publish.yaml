@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write # For cosign
+      id-token: write # Permission for cosign signing
 
     steps:
       - name: Checkout code
@@ -30,8 +30,10 @@ jobs:
 
       - name: Determine tags
         run: |
+          # Initialize tags with latest tags for GitHub Container Registry and Docker Hub
           TAGS="ghcr.io/obeone/multi-registry-cache:latest,docker.io/obeoneorg/multi-registry-cache:latest"
 
+          # If this is a release event, add version-specific tags
           if [[ "${{ github.event_name }}" == "release" ]]; then
             VERSION=${{ github.event.release.tag_name }}
             VERSION=${VERSION#v} # Remove 'v' prefix if present
@@ -39,15 +41,18 @@ jobs:
             MINOR=$(echo $VERSION | cut -d. -f2)
             PATCH=$(echo $VERSION | cut -d. -f3)
 
+            # Add version tags for GitHub Container Registry
             TAGS="$TAGS,ghcr.io/obeone/multi-registry-cache:v$VERSION,ghcr.io/obeone/multi-registry-cache:$VERSION"
             TAGS="$TAGS,ghcr.io/obeone/multi-registry-cache:v$MAJOR.$MINOR,ghcr.io/obeone/multi-registry-cache:$MAJOR.$MINOR"
             TAGS="$TAGS,ghcr.io/obeone/multi-registry-cache:v$MAJOR,ghcr.io/obeone/multi-registry-cache:$MAJOR"
 
+            # Add version tags for Docker Hub
             TAGS="$TAGS,docker.io/obeoneorg/multi-registry-cache:v$VERSION,docker.io/obeoneorg/multi-registry-cache:$VERSION"
             TAGS="$TAGS,docker.io/obeoneorg/multi-registry-cache:v$MAJOR.$MINOR,docker.io/obeoneorg/multi-registry-cache:$MAJOR.$MINOR"
             TAGS="$TAGS,docker.io/obeoneorg/multi-registry-cache:v$MAJOR,docker.io/obeoneorg/multi-registry-cache:$MAJOR"
           fi
 
+          # Export tags as environment variable for later steps
           echo "DOCKER_TAGS=$TAGS" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
@@ -85,6 +90,7 @@ jobs:
       - name: Sign the container image with cosign
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'release'
         run: |
+          # Sign each tag with cosign using the image digest
           for tag in $(echo $DOCKER_TAGS | tr ',' '\n'); do
             cosign sign --yes $tag@${DIGEST}
           done

@@ -36,56 +36,63 @@ def interpolate_strings(obj, variables):
         return obj
 
 
-def create_docker_service(registry, custom={}):
-    """Creates a docker service for the registry.
-    
+def create_docker_service(registry, custom=None):
+    """
+    Creates a docker service for the registry.
+
     Args:
         registry (dict): A dictionary containing the registry information.
-        custom (dict): A dictionary of customizations to apply to the 
-            docker service.
+        custom (dict, optional): A dictionary of customizations to apply to the
+            docker service. Defaults to None.
+
     Returns:
         dict: The docker service.
     """
-    obj = {
-    }
+    if custom is None:
+        custom = {}
+
+    obj = {}
     obj.update(custom)
     
     console.print(Text("Docker service created for the registry", style="green"))
     return interpolate_strings(obj, registry)
 
 
-def create_traefik_router(registry, custom={}):
+def create_traefik_router(registry, custom=None):
     """
     Creates a Traefik router object for a given registry.
 
     Args:
         registry (str): The name of the registry.
-        custom (dict, optional): A dictionary of custom router properties. Defaults to {}.
+        custom (dict, optional): A dictionary of custom router properties. Defaults to None.
 
     Returns:
         dict: A dictionary representing the Traefik router object.
     """
-    obj = {
-    }
-    
+    if custom is None:
+        custom = {}
+
+    obj = {}
     obj.update(custom)
     
     console.print(Text("Traefik router object created", style="green"))
     return interpolate_strings(obj, registry)
 
-def create_traefik_service(registry, custom={}):
+def create_traefik_service(registry, custom=None):
     """
     Creates a Traefik service object with a load balancer configuration that points to the specified registry.
 
     Args:
         registry (str): The URL of the registry to point the load balancer to.
-        custom (dict, optional): A dictionary of custom configuration options to add to the service object. Defaults to {}.
+        custom (dict, optional): A dictionary of custom configuration options to add to the service object. Defaults to None.
 
     Returns:
         dict: A Traefik service object with the specified load balancer configuration.
     """
-    obj = {
-    }
+    if custom is None:
+        custom = {}
+
+    obj = {}
     obj.update(custom)
     
     console.print(Text("Traefik service object created", style="green"))
@@ -118,8 +125,11 @@ def create_registry_config(config, registry, db):
 
     interpolated = interpolate_strings(config, registry)
     
-    if 'redis' in interpolated:
-        interpolated['redis']['db'] = int(db)
+    if isinstance(interpolated, dict) and 'redis' in interpolated:
+        # Ensure 'redis' is a dictionary before setting 'db'
+        redis_config = interpolated.get('redis')
+        if isinstance(redis_config, dict):
+            redis_config['db'] = int(db)
         
     console.print(Text("Registry configuration created", style="green"))
     return interpolated
@@ -156,8 +166,9 @@ def write_http_secret():
     """
     Write the HTTP secret to the .env file if it does not exist or if REGISTRY_HTTP_SECRET is not already set.
     """
-    if not os.path.exists('compose/.env') or 'REGISTRY_HTTP_SECRET' not in open('compose/.env').read():
-        with open('compose/.env', 'a') as env_file:
+    env_path = 'compose/.env'
+    if not os.path.exists(env_path) or 'REGISTRY_HTTP_SECRET' not in open(env_path).read():
+        with open(env_path, 'a') as env_file:
             env_file.write(f"REGISTRY_HTTP_SECRET={secrets.token_hex(32)}\n")
         console.print(Text("HTTP secret written to .env file", style="green"))
     else:
