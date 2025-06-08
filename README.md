@@ -106,11 +106,23 @@ docker run --rm -ti -v "./config.yaml:/app/config.yaml" -v "./compose:/app/compo
    ```
 
 4. **Run the User-Friendly Setup**
-   Execute the setup script to configure your registries and generate necessary files.
+   Execute the setup script to configure your registries and generate necessary files. When prompted, press **Enter** to use the displayed default value.
 
-   ```bash
-   python setup.py
-   ```
+ ```bash
+  python setup.py
+  ```
+
+### Common Defaults
+
+During the interactive setup you can press **Enter** to accept the value shown in brackets. Typical defaults include:
+
+| Prompt | Default |
+| ------ | ------- |
+| Registry name | `docker` |
+| Registry URL | `https://registry-1.docker.io` |
+| TTL | `720h` |
+| Private registry name | `private` |
+| S3 region endpoint | `https://s3.amazonaws.com` |
 
 5. **Review Advanced Configuration**
    After running the setup script, you should manually review the `config.yaml` file for advanced configurations such as TLS settings, Let's Encrypt, addition of private registries, and more. More details about this file in [CONFIG.md](CONFIG.md)

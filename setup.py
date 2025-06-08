@@ -59,30 +59,30 @@ def main():
     # Loop to collect information about each registry
     while True:
         # Prompt user for registry name with a default value
-        name = Prompt.ask("[blue]Enter the name for the registry [/][italic green](e.g., docker)[/]", default="docker")
+        name = Prompt.ask("[blue]Enter the name for the registry [docker] [/][italic green](e.g., docker)[/]", default="docker")
 
         # Collect details of the registry including URL, username, password, and TTL
         registry = {
             'name': name,
             'type': 'cache',
-            'url': Prompt.ask(f"[blue]Enter the URL for registry {name} [/][italic green](e.g., https://registry-1.docker.io)[/]", default="https://registry-1.docker.io"),
+            'url': Prompt.ask(f"[blue]Enter the URL for registry {name} [https://registry-1.docker.io][/][italic green](e.g., https://registry-1.docker.io)[/]", default="https://registry-1.docker.io"),
             'username': Prompt.ask(f"[blue]Enter the username for registry {name} [/][italic green](e.g., user)[/]"),
             'password': Prompt.ask(f"[blue]Enter the password for registry {name} [/][italic green](e.g., pass)[/]"),
-            'ttl': Prompt.ask(f"[blue]Enter the TTL for registry {name} [/][italic green](e.g., '720h')[/]", default="720h")
+            'ttl': Prompt.ask(f"[blue]Enter the TTL for registry {name} [720h][/][italic green](e.g., '720h')[/]", default="720h")
         }
 
         # Ask user to confirm if the entered information is correct
-        if Confirm.ask(Text("Is this correct?", style="bold blue"), default=True):
+        if Confirm.ask(Text("Is this correct? [Y/n]", style="bold blue"), default=True):
             config['registries'].append(registry)
 
         # Ask if user wants to add another registry
-        if not Confirm.ask(Text("Add another registry?", style="bold blue"), default=False):
+        if not Confirm.ask(Text("Add another registry? [y/N]", style="bold blue"), default=False):
             break
 
     # Check if user wants to add a private registry
-    if Confirm.ask(Text("Do you want to add a private registry?", style="bold blue"), default=False):
+    if Confirm.ask(Text("Do you want to add a private registry? [y/N]", style="bold blue"), default=False):
         # Collect details for the private registry
-        name = Prompt.ask("[blue]Enter the name for your private registry [/][italic green](e.g., private)[/]", default="private")
+        name = Prompt.ask("[blue]Enter the name for your private registry [private] [/][italic green](e.g., private)[/]", default="private")
         private_registry = {
             'name': name,
             'type': 'registry',
@@ -106,7 +106,7 @@ def main():
             'secretkey': Prompt.ask(Text("Enter the S3 secret key", style="yellow")),
             'bucket': Prompt.ask(Text("Enter the S3 bucket name", style="yellow")),
             'region': Prompt.ask(Text("Enter the S3 region", style="yellow")),
-            'regionendpoint': Prompt.ask(Text("Enter the S3 region endpoint", style="yellow"), default="https://s3.amazonaws.com"),
+            'regionendpoint': Prompt.ask(Text("Enter the S3 region endpoint [https://s3.amazonaws.com]", style="yellow"), default="https://s3.amazonaws.com"),
             'rootdirectory': '{name}',
         }
     elif storage_driver == "filesystem":
@@ -116,7 +116,7 @@ def main():
         storage_config['rootdirectory'] += '/{name}'
 
         # Ask if a bind-mount is needed
-        if Confirm.ask(Text("Do you need to bind-mount this path on the host?", style="yellow"), default=True):
+        if Confirm.ask(Text("Do you need to bind-mount this path on the host? [Y/n]", style="yellow"), default=True):
             config['docker']['perRegistry']['compose']['volumes'].append(f"{storage_config['rootdirectory']}:{storage_config['rootdirectory']}")
 
     elif storage_driver == "gcs":
@@ -132,7 +132,7 @@ def main():
     config['registry']['baseConfig']['storage'][storage_driver] = storage_config
 
     # Ask if user wants to proceed with creating config.yaml
-    if Confirm.ask(Text("Is everything correct? Do we create config.yaml?", style="bold blue"), default=True):
+    if Confirm.ask(Text("Is everything correct? Do we create config.yaml? [Y/n]", style="bold blue"), default=True):
         # Write the final configuration to config.yaml
         with open('config.yaml', 'w') as file:
             yaml.dump(config, file)
