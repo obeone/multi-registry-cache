@@ -220,4 +220,8 @@ Feel free to contribute to this project by submitting issues or pull requests. F
 
 ---
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
 **Keywords**: Docker, container registry, pull-through cache, Docker Hub mirror, private registry, containerd, dockerd, Kubernetes, k3s, RKE, RKE2, image caching, setup guide, local mirror, container image optimization.
