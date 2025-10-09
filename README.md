@@ -134,6 +134,33 @@ docker run --rm -ti -v "./config.yaml:/app/config.yaml" -v "./compose:/app/compo
    docker compose up -d
    ```
 
+### Automated Garbage Collection ♻️
+
+Each registry entry in `config.yaml` can enable automated disk cleanup by adding a `garbageCollect` section. When present, the `generate.py` script adds a companion service named `registry-gc-<name>` to the generated `compose.yaml`. This maintenance container shares the registry configuration and storage volumes, and periodically runs `registry garbage-collect --delete-untagged` to purge unused blobs.
+
+- Use an `interval` to express a simple repetition delay (for example `24h`, `30m`, or compound values such as `1d12h`).
+- Use a `cron` expression (five fields) to rely on BusyBox `crond` inside the service for calendar-based scheduling.
+
+Example registry entry with both scheduling styles:
+
+```yaml
+registries:
+  - name: quay
+    type: cache
+    url: https://quay.io
+    username: user
+    password: pass
+    ttl: 720h
+    garbageCollect:
+      interval: 24h
+  - name: private
+    type: registry
+    garbageCollect:
+      cron: "0 3 * * *"
+```
+
+> ℹ️ The TTL value (`proxy.ttl`) in the registry configuration controls how long cached content is considered fresh before expiring from Redis. The garbage-collection service complements this by deleting untagged blobs from the backing storage, helping reclaim disk space after manifests lose their tags or TTL evicts them from the proxy cache.
+
 ## Configuring Container Runtimes 🔄
 
 ### containerd Configuration

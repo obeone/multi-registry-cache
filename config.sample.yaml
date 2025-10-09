@@ -28,8 +28,12 @@ registries:
     username: user
     password: pass
     ttl: 720h
+    garbageCollect:
+      interval: 24h
   - name: private
     type: registry
+    garbageCollect:
+      cron: "0 3 * * *"
 
 docker:
   # The docker compose config. This config is used to generate the docker-compose.yaml file. You can use the baseConfig
