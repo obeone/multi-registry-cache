@@ -16,6 +16,7 @@ This script will generate a `compose.yaml` file (same as `docker-compose.yml`). 
 - **Traefik Proxy Integration**: Use Traefik for intelligent routing and secure TLS endpoints out of the box.
 - **Performance Enhancements**: Utilize Redis to improve caching operations and reduce latency.
 - **Environment-Friendly**: Lower external data transfer, contributing to a reduced carbon footprint.
+- **Automated Cache Maintenance**: Configure TTLs to prune stale repositories with the maintenance helper.
 
 ## Table of Contents 📚
 
@@ -126,6 +127,8 @@ docker run --rm -ti -v "./config.yaml:/app/config.yaml" -v "./compose:/app/compo
    python generate.py
    ```
 
+   The generator now writes an additional `compose/cleanup_schedule.yaml` file summarizing each cache registry that has a TTL. The maintenance helper uses this file to decide which registries need cleanup.
+
 7. **Start Your Services**
    Use Docker Compose to start your registry mirrors and the Traefik reverse proxy.
 
@@ -133,6 +136,23 @@ docker run --rm -ti -v "./config.yaml:/app/config.yaml" -v "./compose:/app/compo
    cd compose
    docker compose up -d
    ```
+
+### Cleaning Up Cached Repositories 🧹
+
+Cache registries that specify a `ttl` value are automatically added to a cleanup schedule. Run the maintenance helper to delete repositories that have not been accessed within their TTL window:
+
+```bash
+python maintenance/cleanup.py
+```
+
+Key points:
+
+- The helper reads `compose/cleanup_schedule.yaml` to avoid re-parsing `config.yaml`. It falls back to the main configuration only when the schedule file is missing.
+- Use `--dry-run` to preview actions without removing data.
+- Use `--registry <name>` (repeatable) to limit cleanup to specific caches.
+
+> **Note**
+> The `ttl` field no longer just adjusts the upstream proxy cache lifetime. It now drives automatic deletion of cached repositories once they have been idle longer than the configured TTL.
 
 ## Configuring Container Runtimes 🔄
 

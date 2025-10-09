@@ -12,6 +12,68 @@ import functions
 from functions import console
 from rich.text import Text
 import copy
+from datetime import datetime, timezone
+
+
+def extract_storage_metadata(registry_config):
+    '''
+    Extract storage driver information from a registry configuration.
+
+    Args:
+        registry_config (dict): The rendered registry configuration.
+
+    Returns:
+        tuple: A tuple containing the storage driver name and the storage path if available.
+
+    '''
+    storage_config = registry_config.get('storage', {}) if isinstance(registry_config, dict) else {}
+    if not isinstance(storage_config, dict):
+        return None, None
+
+    filesystem_config = storage_config.get('filesystem')
+    if isinstance(filesystem_config, dict):
+        root_directory = filesystem_config.get('rootdirectory')
+        if root_directory:
+            return 'filesystem', root_directory
+
+    s3_config = storage_config.get('s3')
+    if isinstance(s3_config, dict):
+        bucket = s3_config.get('bucket')
+        root_directory = s3_config.get('rootdirectory', '')
+        if bucket:
+            location = f"s3://{bucket}/{root_directory}" if root_directory else f"s3://{bucket}"
+            return 's3', location
+
+    return None, None
+
+
+def build_cleanup_schedule_entry(registry, registry_config):
+    '''
+    Build the cleanup schedule entry for a registry when a TTL is configured.
+
+    Args:
+        registry (dict): Registry definition from the configuration file.
+        registry_config (dict): Rendered registry configuration used for the registry service.
+
+    Returns:
+        dict or None: The cleanup schedule entry, or None if no TTL or storage information is available.
+
+    '''
+    ttl_value = registry.get('ttl')
+    if not ttl_value:
+        return None
+
+    storage_driver, storage_path = extract_storage_metadata(registry_config)
+    if not storage_path:
+        return None
+
+    return {
+        'name': registry.get('name'),
+        'type': registry.get('type', 'cache'),
+        'ttl': str(ttl_value),
+        'storage_driver': storage_driver,
+        'storage_path': storage_path,
+    }
 
 
 # Load configuration from config.yaml file
@@ -45,6 +107,7 @@ else:
 
 # Initialize Redis database count for registries
 count_redis_db = 0
+cleanup_entries = []
 
 # Iterate over each registry to create configuration files and update docker and traefik configs
 for registry in registries:
@@ -62,6 +125,9 @@ for registry in registries:
         registry_config_file = functions.create_registry_config(registry_config_copy, registry, count_redis_db)
         functions.write_yaml_file(f'compose/{name}.yaml', registry_config_file)
         console.print(Text(f"Registry configuration file created for {name}", style="bold green"))
+        schedule_entry = build_cleanup_schedule_entry(registry, registry_config_file)
+        if schedule_entry:
+            cleanup_entries.append(schedule_entry)
     except Exception as e:
         console.print(Text(f"Error creating registry configuration file for {name}: {e}", style="bold red"))
         raise
@@ -92,6 +158,11 @@ try:
     functions.write_yaml_file('compose/compose.yaml', docker_config)
     functions.write_yaml_file('compose/traefik.yaml', traefik_config)
     functions.write_to_file('compose/redis.conf', f'databases {count_redis_db}')
+    cleanup_schedule = {
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'registries': cleanup_entries,
+    }
+    functions.write_yaml_file('compose/cleanup_schedule.yaml', cleanup_schedule)
 
     # If docker-compose.yml exists, ask for confirmation before removing it
     docker_compose_path = 'compose/docker-compose.yml'

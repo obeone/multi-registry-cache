@@ -27,6 +27,7 @@ registries:
     url: https://quay.io
     username: user
     password: pass
+    # Cache entries idle for longer than this TTL will be deleted by maintenance/cleanup.py
     ttl: 720h
   - name: private
     type: registry
