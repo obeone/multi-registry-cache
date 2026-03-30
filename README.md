@@ -1,144 +1,150 @@
-# Multi-Registry Pull Through Cache Setup Guide 🚀
+# Multi-Registry Pull Through Cache 🚀
 
-Welcome to the Multi-Registry Pull Through Cache Setup Guide! This project is designed to help you create an efficient, bandwidth-saving local mirror for Docker Hub images and other container registries, including private registries. By setting up a pull-through cache, you can significantly reduce internet traffic and improve the speed of image pulls for your containerized environments. 🌐💨
+![Python](https://img.shields.io/badge/Python-3.12+-blue?logo=python&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Traefik](https://img.shields.io/badge/Traefik-Proxy-orange?logo=traefikproxy&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-Cache-red?logo=redis&logoColor=white)
 
-This script will generate a `compose.yaml` file (same as `docker-compose.yml`). It will include one registry service for each registry mirror you wish to set up. A Traefik Proxy will be placed as a frontend for routing and providing a TLS endpoint. Additionally, a Redis service will be provided to enhance performance.
+Generate a complete Docker Compose stack with pull-through caches for multiple container registries, fronted by Traefik and accelerated by Redis.
 
-## Features ✨
+> **⚠️ Migrating from v0.x (script-based)?** `python setup.py` → `multi-registry-cache setup`, `python generate.py` → `multi-registry-cache generate`. Your existing `config.yaml` and Docker usage are **fully compatible**.
 
-- **Multi-Registry Support**: Set up mirrors for Docker Hub, GitHub Container Registry (GHCR), or any other container registries.
-- **Private Registry Integration**: Easily add a private registry to push and pull images from your private repositories.
-- **Bandwidth Optimization**: Save bandwidth by caching container images locally, reducing repeated downloads.
-- **Speed Improvements**: Expedite image pulls within your network, leading to faster deployments and scaling.
-- **Docker and Kubernetes Compatibility**: Seamlessly integrates with Docker and Kubernetes environments.
-- **Advanced Configuration**: Customize registry settings, including TTL and credentials, with a user-friendly setup.
-- **Simple Deployment**: Leverage Docker Compose for a straightforward setup and management of services.
-- **Traefik Proxy Integration**: Use Traefik for intelligent routing and secure TLS endpoints out of the box.
-- **Performance Enhancements**: Utilize Redis to improve caching operations and reduce latency.
-- **Environment-Friendly**: Lower external data transfer, contributing to a reduced carbon footprint.
+---
 
-## Table of Contents 📚
+```mermaid
+flowchart TB
+    subgraph Clients
+        D[Docker / containerd]
+        K[Kubernetes nodes]
+    end
 
-- [Multi-Registry Pull Through Cache Setup Guide 🚀](#multi-registry-pull-through-cache-setup-guide-)
-  - [Features ✨](#features-)
-  - [Table of Contents 📚](#table-of-contents-)
-  - [Purpose of the Project 🎯](#purpose-of-the-project-)
-  - [How to Set Up the Project 🛠️](#how-to-set-up-the-project-️)
-    - [Prerequisites](#prerequisites)
-    - [Running with Docker](#running-with-docker)
-      - [Run the Setup Script](#run-the-setup-script)
-      - [Run the Generate Script](#run-the-generate-script)
-    - [Running python files](#running-python-files)
-      - [Step-by-Step Setup](#step-by-step-setup)
-  - [Configuring Container Runtimes 🔄](#configuring-container-runtimes-)
-    - [containerd Configuration](#containerd-configuration)
-      - [nerdctl Configuration](#nerdctl-configuration)
-    - [dockerd Configuration](#dockerd-configuration)
-    - [Kubernetes Clusters (k3s, RKE, RKE2 etc)](#kubernetes-clusters-k3s-rke-rke2-etc)
-      - [k3s / RKE2](#k3s--rke2)
-      - [Other distributions](#other-distributions)
-  - [Conclusion 🎉](#conclusion-)
+    subgraph Cache Stack
+        T[Traefik Proxy\nTLS + routing]
+        R1[Registry: docker.io]
+        R2[Registry: ghcr.io]
+        R3[Registry: quay.io]
+        RN[Registry: ...]
+        RE[Redis\nblob cache]
+    end
 
-## Purpose of the Project 🎯
+    subgraph Upstream
+        U1[(Docker Hub)]
+        U2[(GHCR)]
+        U3[(Quay)]
+        UN[(...)]
+    end
 
-The primary goal of this project is to establish a local caching service that acts as an intermediary between your Docker daemons and public container image registries. This setup is perfect for environments with multiple instances of Docker or Kubernetes clusters, where each node pulling images separately can lead to unnecessary bandwidth consumption and latency. 🐳🔁
+    D & K -->|pull| T
+    T --> R1 & R2 & R3 & RN
+    R1 & R2 & R3 & RN --> RE
+    R1 -.->|cache miss| U1
+    R2 -.->|cache miss| U2
+    R3 -.->|cache miss| U3
+    RN -.->|cache miss| UN
+```
 
-By using a pull-through cache, you can:
+---
 
-- Minimize external bandwidth usage
-- Accelerate image pull times
-- Reduce the load on public registries
-- Ensure consistent availability of images within your network
-- Reduce your carbon footprint
+## 🚀 Features
 
-## How to Set Up the Project 🛠️
+| Feature | Description |
+| --- | --- |
+| 🏗️ **Multi-Registry** | Mirror Docker Hub, GHCR, Quay, NVCR, or any OCI registry |
+| 🔒 **Private Registry** | Add a private registry alongside your caches |
+| 🌐 **Traefik Proxy** | Automatic TLS termination and subdomain-based routing |
+| ⚡ **Redis Acceleration** | Blob descriptor caching for faster repeated pulls |
+| 🧙 **Interactive Wizard** | Guided `setup` command to generate your `config.yaml` |
+| 📦 **Installable CLI** | `uvx`, `pipx`, `pip install`, or Docker — your choice |
+| ☸️ **K8s Ready** | Works with k3s, RKE2, containerd, dockerd |
+| 🗄️ **Flexible Storage** | Filesystem, S3, GCS, or in-memory backends |
+| 🔧 **Customizable** | Full control over Traefik, registry, and Compose config via `{name}` interpolation |
+| 🌱 **Eco-Friendly** | Less external bandwidth = smaller carbon footprint |
 
-### Prerequisites
+---
 
-- Docker installed on your host machine
-- `containerd` and/or `dockerd` running on your nodes
-- Access to the internet to pull initial images
-- Basic knowledge of Docker, Kubernetes, and container registries
+## 📦 Installation
 
-### Running with Docker
+### With uvx (recommended, zero install)
 
-#### Run the Setup Script
+```bash
+uvx multi-registry-cache setup
+uvx multi-registry-cache generate
+```
 
-To execute the `setup.py` script inside the Docker container:
+### With uv tool / pipx
+
+```bash
+uv tool install multi-registry-cache   # or: pipx install multi-registry-cache
+multi-registry-cache setup
+multi-registry-cache generate
+```
+
+### With pip
+
+```bash
+pip install multi-registry-cache
+```
+
+### With Docker
 
 ```bash
 touch config.yaml
-docker run --rm -ti -v "./config.yaml:/app/config.yaml" obeoneorg/multi-registry-cache setup 
-```
-
-#### Run the Generate Script
-
-To trigger the `generate.py` script:
-
-```bash
+docker run --rm -ti -v "./config.yaml:/app/config.yaml" obeoneorg/multi-registry-cache setup
 docker run --rm -ti -v "./config.yaml:/app/config.yaml" -v "./compose:/app/compose" obeoneorg/multi-registry-cache generate
 ```
 
-### Running python files
+---
 
-#### Step-by-Step Setup
+## 🛠️ Quick Start
 
-1. **Clone the Repository**
+```mermaid
+flowchart LR
+    A["1️⃣ setup"] --> B["2️⃣ edit config"] --> C["3️⃣ generate"] --> D["4️⃣ docker compose up"]
+```
 
-   ```bash
-   git clone https://github.com/obeone/multi-registry-cache.git
-   cd multi-registry-cache
-   ```
+### 1. Run the interactive wizard
 
-2. **Set Up a Virtual Environment (Optional)**
-   You may choose to create a virtual environment to avoid affecting your global Python package setup.
+```bash
+multi-registry-cache setup
+```
 
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
+### 2. Review & fine-tune
 
-3. **Install Dependencies**
-   Install the required packages using pip.
+Edit `config.yaml` for advanced settings (TLS, Let's Encrypt, storage backends, etc.). See [CONFIG.md](CONFIG.md) for details.
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 3. Generate the stack
 
-4. **Run the User-Friendly Setup**
-   Execute the setup script to configure your registries and generate necessary files.
+```bash
+multi-registry-cache generate
+```
 
-   ```bash
-   python setup.py
-   ```
+### 4. Launch
 
-5. **Review Advanced Configuration**
-   After running the setup script, you should manually review the `config.yaml` file for advanced configurations such as TLS settings, Let's Encrypt, addition of private registries, and more. More details about this file in [CONFIG.md](CONFIG.md)
+```bash
+cd compose && docker compose up -d
+```
 
-   ```bash
-   nano config.yaml # or use your preferred text editor
-   ```
+---
 
-6. **Generate Configuration Files**
-   Run the generate script to create the necessary configuration files for your setup.
+## ⚙️ CLI Reference
 
-   ```bash
-   python generate.py
-   ```
+| Command | Description |
+| --- | --- |
+| `multi-registry-cache setup` | Interactive wizard → `config.yaml` |
+| `multi-registry-cache generate` | Read `config.yaml` → generate `compose/` |
+| `multi-registry-cache --help` | Show all commands |
 
-7. **Start Your Services**
-   Use Docker Compose to start your registry mirrors and the Traefik reverse proxy.
+| Option | Applies to | Default | Description |
+| --- | --- | --- | --- |
+| `--config`, `-c` | `setup`, `generate` | `config.yaml` | Config file path |
+| `--output-dir`, `-o` | `generate` | `compose` | Output directory |
 
-   ```bash
-   cd compose
-   docker compose up -d
-   ```
+---
 
-## Configuring Container Runtimes 🔄
+## 🔄 Configuring Container Runtimes
 
-### containerd Configuration
-
-For `containerd`, you'll need to modify the `config.toml` file to specify the registry mirrors.
+### containerd
 
 ```toml
 [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
@@ -148,21 +154,17 @@ For `containerd`, you'll need to modify the `config.toml` file to specify the re
     endpoint = ["https://ghcr.registry-cache.example.net"]
 ```
 
-After updating the configuration, restart `containerd`:
-
 ```bash
 sudo systemctl restart containerd
 ```
 
-#### nerdctl Configuration
-
-For `nerdctl`, you'll need to create a directory per registry mirror and push content into a file:
+### nerdctl
 
 ```bash
 mkdir -p /etc/containerd/certs.d/docker.io/
 ```
 
-And create a file `/etc/containerd/certs.d/docker.io/hosts.toml` with the following content:
+`/etc/containerd/certs.d/docker.io/hosts.toml`:
 
 ```toml
 server = "https://docker.io"
@@ -171,11 +173,7 @@ server = "https://docker.io"
   capabilities = ["pull", "resolve"]
 ```
 
-(Same principle in rootless mode, just modify user config)
-
-### dockerd Configuration
-
-For `dockerd`, you can only configure a single mirror for Docker Hub. Update the `/etc/docker/daemon.json` file with the following:
+### dockerd
 
 ```json
 {
@@ -183,18 +181,13 @@ For `dockerd`, you can only configure a single mirror for Docker Hub. Update the
 }
 ```
 
-Reload the Docker daemon to apply the changes:
-
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl restart docker
+sudo systemctl daemon-reload && sudo systemctl restart docker
 ```
 
-### Kubernetes Clusters (k3s, RKE, RKE2 etc)
+### k3s / RKE2
 
-#### k3s / RKE2
-
-Edit file `/etc/rancher/(k3s|rke2)/registries.yaml` and add:
+`/etc/rancher/(k3s|rke2)/registries.yaml`:
 
 ```yaml
 mirrors:
@@ -206,22 +199,16 @@ mirrors:
       - https://ghcr.registry-cache.example.net
 ```
 
-#### Other distributions
+### Other Kubernetes distributions
 
-For Kubernetes clusters, you'll probably need to configure each node's container runtime to use the registry mirror. Refer to the specific documentation of your distribution for details on how to apply registry mirror configurations.
-
-## Conclusion 🎉
-
-Congratulations! You've now set up a multi-registry pull-through cache that will serve as a local mirror for your container images, including private registry configurations. Enjoy faster image pulls, reduced external bandwidth, and a more resilient container environment!
+Configure each node's container runtime to use the registry mirror. Refer to your distribution's documentation.
 
 ---
 
-Feel free to contribute to this project by submitting issues or pull requests. For questions or support, open an issue on the project's GitHub page. Happy caching! 🐋💾
+## 📄 License
+
+MIT — [Grégoire Compagnon](https://github.com/obeone)
 
 ---
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
-**Keywords**: Docker, container registry, pull-through cache, Docker Hub mirror, private registry, containerd, dockerd, Kubernetes, k3s, RKE, RKE2, image caching, setup guide, local mirror, container image optimization.
+Contributions welcome! Open an [issue](https://github.com/obeone/multi-registry-cache/issues) or submit a PR. 🐋
