@@ -1,45 +1,34 @@
 # syntax=docker/dockerfile:1
 #
-# Dockerfile for building and running the Python application.
-# It uses a multi-stage build to create wheel files for dependencies
-# in a full Python environment, then installs them in a slim Python image
-# to reduce the final image size.
-#
-# Stage 1: Build wheels for dependencies
-FROM python:3.12 AS wheel
+# Multi-stage Dockerfile for the multi-registry-cache CLI tool.
+# Builds the package in a full image, then copies the installed artifacts
+# into a slim runtime image for a smaller final image.
 
-# Set the working directory inside the container
-WORKDIR /app
+# -- Build stage --
+FROM python:3.12-slim AS builder
 
-# Copy the requirements file to the working directory
-COPY requirements.txt .
+WORKDIR /build
 
-# Install wheel package and build wheel files for all dependencies listed in requirements.txt
+COPY . .
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install wheel && \
-    pip wheel --exists-action i -r requirements.txt --wheel-dir /root/.cache/wheel
+    pip install --prefix=/install .
 
-# Stage 2: Create the final image with a slim Python base
+# -- Runtime stage --
 FROM python:3.12-slim
 
-# Environment variable to indicate running inside Docker
+LABEL org.opencontainers.image.source="https://github.com/obeone/multi-registry-cache" \
+      org.opencontainers.image.description="Multi-registry pull-through cache configuration generator" \
+      org.opencontainers.image.licenses="MIT"
+
 ENV IN_DOCKER=1
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the requirements file to the working directory
-COPY requirements.txt .
+# Copy installed package from builder
+COPY --from=builder /install /usr/local
 
-# Install dependencies from the pre-built wheel files from the previous stage
-RUN --mount=type=bind,from=wheel,source=/root/.cache/wheel,dst=/root/.cache/wheel \
-    pip install --no-index --find-links=/root/.cache/wheel -r requirements.txt
+# Non-root user
+RUN groupadd -r -g 10001 app && useradd -r -u 10001 -g app -d /app app
+USER app
 
-# Copy the entire application code into the container
-COPY . .
-
-# Copy the entrypoint script and set executable permissions
-COPY --chmod=777 docker/entrypoint.sh /
-
-# Set the entrypoint for the container
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT ["multi-registry-cache"]

@@ -1,51 +1,52 @@
 """
-Setup script for Traefik Registry multi-registry environment configuration.
+Interactive setup wizard for the multi-registry cache configuration.
 
-This script interactively prompts the user to configure multiple registries,
+This script prompts the user to configure multiple registries,
 storage options, and domain settings, then generates a config.yaml file
 based on the inputs.
 
 Usage:
-    Run this script and follow the prompts to create or update the configuration.
-
-Modules used:
-- rich: for enhanced console input/output
-- ruamel.yaml: for YAML parsing and writing with preserved formatting
+    Called via the CLI: multi-registry-cache setup [--config config.yaml]
 """
 
-from rich.prompt import Prompt, Confirm
-from rich.text import Text
-from ruamel.yaml import YAML
-from functions import console
+import importlib.resources
 import os
 import tempfile
 
+from rich.prompt import Confirm, Prompt
+from rich.text import Text
+from ruamel.yaml import YAML
 
-def main():
+from multi_registry_cache.functions import console
+
+
+def main(config_path="config.yaml"):
     """
-    Main function to run the interactive setup for Traefik Registry multi-registry environment.
+    Run the interactive setup for the multi-registry cache environment.
 
-    It prompts the user for registry details, storage configuration, and domain settings,
+    Prompts the user for registry details, storage configuration, and domain settings,
     then generates a config.yaml file based on the provided inputs.
 
     The configuration supports multiple registries, including private registries,
     and various storage backends such as inmemory, filesystem, S3, and GCS.
 
-    The function uses rich for console interaction and ruamel.yaml for YAML handling.
-
-    Returns:
-        None
+    Parameters
+    ----------
+    config_path : str
+        Path where the generated config.yaml will be written. Defaults to "config.yaml".
     """
     # Initialize the YAML parser with specific settings to preserve quotes and indentation
     yaml = YAML()
     yaml.preserve_quotes = True
     yaml.indent(mapping=2, sequence=4, offset=2)
 
-    # Load the default configuration from a sample file
-    with open('config.sample.yaml') as sample_file:
-        config = yaml.load(sample_file)
+    # Load the default configuration from the bundled sample file
+    sample_ref = importlib.resources.files("multi_registry_cache.data").joinpath("config.sample.yaml")
+    with importlib.resources.as_file(sample_ref) as sample_path:
+        with open(sample_path) as sample_file:
+            config = yaml.load(sample_file)
 
-    # Print welcome message using rich's console for better formatting
+    # Print welcome message
     console.print(Text("Welcome to the Traefik Registry setup", style="bold green"))
     console.print()
     console.print(Text("This script will help you setup a multi-registry environment", style="green"))
@@ -134,27 +135,23 @@ def main():
     # Ask if user wants to proceed with creating config.yaml
     if Confirm.ask(Text("Is everything correct? Do we create config.yaml?", style="bold blue"), default=True):
         # Write the final configuration to config.yaml
-        with open('config.yaml', 'w') as file:
+        with open(config_path, 'w') as file:
             yaml.dump(config, file)
 
-        console.print(Text("\nconfig.yaml has been created successfully!", style="green"))
+        console.print(Text(f"\n{config_path} has been created successfully!", style="green"))
     else:
         # If not confirmed, write to a temporary file
         with tempfile.NamedTemporaryFile('w', delete=False) as tf:
             yaml.dump(config, tf)
             temp_file_name = tf.name
 
-        console.print(Text(f"\nconfig.yaml has not been created! The created file is in {temp_file_name}", style="bold red"))
+        console.print(Text(f"\n{config_path} has not been created! The created file is in {temp_file_name}", style="bold red"))
 
     # Determine the command to run based on whether running inside a Docker container or not
     if os.environ.get('IN_DOCKER', False):
         command = 'docker run --rm -ti -v "./config.yaml:/app/config.yaml" -v "./compose:/app/compose" obeoneorg/multi-registry-cache generate'
     else:
-        command = 'python3 generate.py'
+        command = 'multi-registry-cache generate'
 
     # Print the final message with instructions for next steps
-    console.print(f"[bold green]Now you can edit [bold blue]config.yaml[bold green] and fine-tune parameters and when it's ok for you, just run :\n[bold blue]{command}")
-
-
-if __name__ == "__main__":
-    main()
+    console.print(f"[bold green]Now you can edit [bold blue]{config_path}[bold green] and fine-tune parameters and when it's ok for you, just run :\n[bold blue]{command}")
