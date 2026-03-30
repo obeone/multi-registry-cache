@@ -199,6 +199,45 @@ mirrors:
       - https://ghcr.registry-cache.example.net
 ```
 
+### BuildKit
+
+BuildKit resolves images independently from dockerd. Without explicit configuration, `docker build` will **not** use your registry mirrors.
+
+Create a `buildkitd.toml` with your mirrors:
+
+```toml
+[registry."docker.io"]
+  mirrors = ["dockerhub.registry-cache.example.net"]
+
+[registry."ghcr.io"]
+  mirrors = ["ghcr.registry-cache.example.net"]
+
+[registry."dockerhub.registry-cache.example.net"]
+  http = false
+  # ca = ["/etc/certs/my-ca.pem"]  # if using a private CA
+
+[registry."ghcr.registry-cache.example.net"]
+  http = false
+```
+
+Where to place this file depends on your setup:
+
+| Context | Config path |
+| --- | --- |
+| Docker Engine (rootful) | `/etc/buildkit/buildkitd.toml` |
+| Docker Engine (rootless) | `~/.config/buildkit/buildkitd.toml` |
+| buildx auto-detection | `~/.docker/buildx/buildkitd.default.toml` |
+| Docker Desktop default builder | **Not supported** (see below) |
+
+> **Docker Desktop**: the default builder uses the `docker` driver, which does **not** support `buildkitd.toml`. You must create a separate builder with the `docker-container` driver:
+>
+> ```bash
+> docker buildx create --use --bootstrap \
+>   --name cached-builder \
+>   --driver docker-container \
+>   --buildkitd-config /path/to/buildkitd.toml
+> ```
+
 ### Other Kubernetes distributions
 
 Configure each node's container runtime to use the registry mirror. Refer to your distribution's documentation.
