@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "multi-registry-cache"
-version = "1.0.0"
+version = "1.0.3"
 description = "Generate Docker Compose, Traefik, and registry configuration files for multi-registry pull-through caches"
 readme = "README.md"
 license = "MIT"
