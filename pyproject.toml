@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "multi-registry-cache"
+version = "1.0.0"
+description = "Generate Docker Compose, Traefik, and registry configuration files for multi-registry pull-through caches"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [
+    { name = "Grégoire Compagnon", email = "obeone@obeone.org" },
+]
+keywords = ["docker", "registry", "cache", "traefik", "pull-through"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Systems Administration",
+]
+dependencies = [
+    "PyYAML>=6.0",
+    "rich>=13.9",
+    "ruamel.yaml>=0.18",
+    "typer>=0.15",
+]
+
+[project.scripts]
+multi-registry-cache = "multi_registry_cache.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/obeone/multi-registry-cache"
+Repository = "https://github.com/obeone/multi-registry-cache"
+Issues = "https://github.com/obeone/multi-registry-cache/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/multi_registry_cache"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
