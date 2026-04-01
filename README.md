@@ -244,6 +244,23 @@ Configure each node's container runtime to use the registry mirror. Refer to you
 
 ---
 
+## 📚 Documentation
+
+Full documentation is available in the [`docs/`](docs/) folder:
+
+| Page | Description |
+| --- | --- |
+| [Architecture](docs/architecture.md) | Data flow, interpolation system, Redis DB assignment |
+| [Configuration](docs/configuration.md) | Complete `config.yaml` reference |
+| [CLI reference](docs/cli.md) | All commands, options, shell completion |
+| [Storage backends](docs/storage-backends.md) | inmemory, filesystem, S3, GCS |
+| [TLS & SSL](docs/tls-ssl.md) | Let's Encrypt, ACME, BYO cert, HTTP-only |
+| [Runtime configuration](docs/runtime-configuration.md) | containerd, dockerd, k3s, BuildKit |
+| [Internals](docs/internals.md) | Source code walkthrough, running tests |
+| [Contributing](docs/contributing.md) | Dev setup, commit conventions, PR process |
+
+---
+
 ## 📄 License
 
 MIT — [Grégoire Compagnon](https://github.com/obeone)
