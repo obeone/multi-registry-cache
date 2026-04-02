@@ -8,7 +8,7 @@
 
 Generate a complete Docker Compose stack with pull-through caches for multiple container registries, fronted by Traefik and accelerated by Redis.
 
-> **⚠️ Migrating from the script-based version?** See the [upgrade guide](UPGRADING.md). TL;DR: `python setup.py` → `multi-registry-cache setup`, `python generate.py` → `multi-registry-cache generate`. Your existing `config.yaml` and Docker usage are **fully compatible**.
+> **⚠️ Migrating from the script-based version?** See the [upgrade guide](docs/upgrading.md). TL;DR: `python setup.py` → `multi-registry-cache setup`, `python generate.py` → `multi-registry-cache generate`. Your existing `config.yaml` and Docker usage are **fully compatible**.
 
 ---
 
@@ -111,7 +111,7 @@ multi-registry-cache setup
 
 ### 2. Review & fine-tune
 
-Edit `config.yaml` for advanced settings (TLS, Let's Encrypt, storage backends, etc.). See [CONFIG.md](CONFIG.md) for details.
+Edit `config.yaml` for advanced settings (TLS, Let's Encrypt, storage backends, etc.). See [docs/configuration.md](docs/configuration.md) for details.
 
 ### 3. Generate the stack
 
@@ -258,6 +258,7 @@ Full documentation is available in the [`docs/`](docs/) folder:
 | [Runtime configuration](docs/runtime-configuration.md) | containerd, dockerd, k3s, BuildKit |
 | [Internals](docs/internals.md) | Source code walkthrough, running tests |
 | [Contributing](docs/contributing.md) | Dev setup, commit conventions, PR process |
+| [Upgrading to v2.0.0](docs/upgrading.md) | Migrate from the old script-based version |
 
 ---
 

@@ -16,6 +16,7 @@ Generate a complete Docker Compose stack that acts as pull-through cache for mul
 | Point Docker / containerd / k3s at the cache | [Runtime configuration](runtime-configuration.md) |
 | Read the source code or run tests | [Internals & developer guide](internals.md) |
 | Contribute a fix or feature | [Contributing](contributing.md) |
+| Migrate from v1.x scripts | [Upgrading to v2.0.0](upgrading.md) |
 
 ---
 
