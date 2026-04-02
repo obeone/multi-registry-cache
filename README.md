@@ -8,9 +8,9 @@
 
 Generate a complete Docker Compose stack with pull-through caches for multiple container registries, fronted by Traefik and accelerated by Redis.
 
-> **⚠️ Migrating from v1.x scripts?** See the [upgrade guide](docs/upgrading.md).
-> TL;DR: `python setup.py` → `multi-registry-cache setup`, `python generate.py` → `multi-registry-cache generate`.
-> Your `config.yaml` and Docker usage are **fully compatible**.
+> **⚠️ Migrating from v1.x scripts?**
+>
+> See the [upgrade guide](docs/upgrading.md). TL;DR: `python setup.py` → `multi-registry-cache setup`, `python generate.py` → `multi-registry-cache generate`. Your `config.yaml` and Docker usage are **fully compatible**.
 
 ---
 
