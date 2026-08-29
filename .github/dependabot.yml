@@ -1,0 +1,94 @@
+version: 2
+updates:
+- package-ecosystem: github-actions
+  directory: /
+  schedule:
+    interval: weekly
+    day: monday
+    time: 06:00
+    timezone: Europe/Paris
+  open-pull-requests-limit: 5
+  labels:
+  - dependencies
+  commit-message:
+    prefix: chore(deps)
+  groups:
+    actions-minor-patch:
+      applies-to: version-updates
+      update-types:
+      - minor
+      - patch
+    actions-major:
+      applies-to: version-updates
+      update-types:
+      - major
+- package-ecosystem: pip
+  directory: /
+  schedule:
+    interval: weekly
+    day: monday
+    time: 06:00
+    timezone: Europe/Paris
+  open-pull-requests-limit: 5
+  labels:
+  - dependencies
+  commit-message:
+    prefix: chore(deps)
+    prefix-development: chore(deps-dev)
+    include: scope
+  groups:
+    pip-minor-patch:
+      applies-to: version-updates
+      update-types:
+      - minor
+      - patch
+    pip-major:
+      applies-to: version-updates
+      update-types:
+      - major
+- package-ecosystem: uv
+  directory: /
+  schedule:
+    interval: weekly
+    day: monday
+    time: 06:00
+    timezone: Europe/Paris
+  open-pull-requests-limit: 5
+  labels:
+  - dependencies
+  commit-message:
+    prefix: chore(deps)
+    prefix-development: chore(deps-dev)
+    include: scope
+  groups:
+    uv-minor-patch:
+      applies-to: version-updates
+      update-types:
+      - minor
+      - patch
+    uv-major:
+      applies-to: version-updates
+      update-types:
+      - major
+- package-ecosystem: docker
+  directory: /docker
+  schedule:
+    interval: weekly
+    day: monday
+    time: 06:00
+    timezone: Europe/Paris
+  open-pull-requests-limit: 5
+  labels:
+  - dependencies
+  commit-message:
+    prefix: chore(deps)
+  groups:
+    docker-minor-patch:
+      applies-to: version-updates
+      update-types:
+      - minor
+      - patch
+    docker-major:
+      applies-to: version-updates
+      update-types:
+      - major
